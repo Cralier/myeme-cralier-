@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
 
     // ▼ 並び替えを初期化（材料・作り方）
@@ -10,7 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholder: 'sortable-placeholder',
             tolerance: 'pointer'
           });
-      
+
+          $('#tools-wrapper').sortable({
+            handle: '.handle',
+            placeholder: 'sortable-placeholder',
+            tolerance: 'pointer'
+          });
+          
           $('#steps-container').sortable({
             handle: '.handle',
             items: '> .step-item',
@@ -77,6 +81,58 @@ if (wrapper && addBtn) {
     initSortable();
   });
 }
+
+// ▼ 道具セクション（材料と同じ構造）
+const toolsWrapper = document.getElementById('tools-wrapper');
+const addToolBtn = document.getElementById('add-tool');
+function createToolItem() {
+  const item = document.createElement('div');
+  item.className = 'tool-item';
+
+  const handle = document.createElement('div');
+  handle.className = 'handle';
+  handle.textContent = '≡';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.name = 'tool_name[]';
+  nameInput.className = 'tool-name';
+  nameInput.placeholder = '道具名を入力';
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'url';
+  urlInput.name = 'tool_url[]';
+  urlInput.className = 'tool-url';
+  urlInput.placeholder = '道具のURL（任意）';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-tool';
+  deleteBtn.textContent = '削除';
+  deleteBtn.addEventListener('click', () => {
+    if (document.querySelectorAll('.tool-item').length > 1) {
+      item.remove();
+    }
+  });
+
+  item.appendChild(handle);
+  item.appendChild(nameInput);
+  item.appendChild(urlInput);
+  item.appendChild(deleteBtn);
+
+  return item;
+}
+
+// 初期化処理
+if (toolsWrapper && addToolBtn) {
+  toolsWrapper.innerHTML = '';
+  toolsWrapper.appendChild(createToolItem());
+
+  addToolBtn.addEventListener('click', () => {
+    toolsWrapper.appendChild(createToolItem());
+    initSortable();
+  });
+}
   
     // ▼ 作り方ステップ追加処理
     const stepContainer = document.getElementById('steps-container');
@@ -128,4 +184,3 @@ if (wrapper && addBtn) {
     });
   });
   
-

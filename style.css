@@ -877,3 +877,57 @@ textarea[name="steps_text[]"] {
 .button-group .btn-view:hover {
   background-color: #222;
 }
+
+/* ▼ 個別の道具入力ブロック（材料と同じデザイン） */
+.tool-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* ▼ 並び替えハンドル */
+.tool-item .handle {
+  cursor: grab;
+  font-size: 20px;
+  padding: 4px 8px;
+  color: #999;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  user-select: none;
+}
+
+/* ▼ 道具名・URLの入力欄 */
+.tool-item input[type="text"],
+.tool-item input[type="url"] {
+  flex: 1 1 180px;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* ▼ 削除ボタン */
+.tool-item .remove-tool {
+  background-color: #f65c4b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ▼ モバイル対応（道具も） */
+@media (max-width: 380px) {
+  .tool-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

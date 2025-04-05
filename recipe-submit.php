@@ -24,6 +24,7 @@ if (!is_user_logged_in()) {
 $form_title = '';
 $form_cooking_time = '';
 $form_ingredients = [];
+$form_tools = [];
 $form_steps = [];
 $editing_post = null;
 
@@ -52,7 +53,7 @@ if ($draft_post_id) {
     $editing_post = $post;
     $form_title = esc_attr($post->post_title);
     $form_cooking_time = get_post_meta($draft_post_id, 'cooking_time', true);
-    $form_ingredients = json_decode(get_post_meta($draft_post_id, 'ingredients', true), true) ?: [];
+    $form_toolss = json_decode(get_post_meta($draft_post_id, 'tools', true), true) ?: [];
     $form_steps = json_decode(get_post_meta($draft_post_id, 'steps', true), true) ?: [];
 }
 
@@ -112,6 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           ];
       }
       update_post_meta($post_id, 'ingredients', json_encode($ingredients, JSON_UNESCAPED_UNICODE));
+  }
+
+  // ▼ 道具の保存
+  if (!empty($_POST['tool_name'])) {
+    $tools = [];
+    foreach ($_POST['tool_name'] as $index => $name) {
+        $tools[] = [
+            'name' => sanitize_text_field($name),
+            'url'  => esc_url_raw($_POST['tool_url'][$index] ?? ''),
+        ];
+    }
+    update_post_meta($post_id, 'tools', json_encode($tools, JSON_UNESCAPED_UNICODE));
   }
 
   // 投稿完了後マイページへリダイレクト
@@ -220,6 +233,17 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- 材料ブロックはJSで追加 -->
     </div>
     <button type="button" id="add-ingredient">＋ 材料を追加する</button>
+  </section>
+
+  <hr class="step-separator">
+
+  <!-- ▼ 道具リスト -->
+  <section id="tools-section">
+    <h2>道具</h2>
+    <div id="tools-wrapper">
+      <!-- JSで追加 -->
+    </div>
+    <button type="button" id="add-tool">＋ 道具を追加する</button>
   </section>
 
   <hr class="step-separator">
