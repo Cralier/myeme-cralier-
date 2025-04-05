@@ -53,7 +53,7 @@ if ($draft_post_id) {
     $form_title = esc_attr($post->post_title);
     $form_cooking_time = get_post_meta($draft_post_id, 'cooking_time', true);
     $form_ingredients = json_decode(get_post_meta($draft_post_id, 'ingredients', true), true) ?: [];
-    $form_steps = explode("【手順", $post->post_content);
+    $form_steps = json_decode(get_post_meta($draft_post_id, 'steps', true), true) ?: [];
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -75,16 +75,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $post_id = wp_insert_post($post_data); // ← これで上書きになる
 
-  // 作り方ステップを本文に保存
+  // 画像をアイキャッチとして保存
+  if (!empty($_FILES['recipe_image']['tmp_name'])) {
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+
+    $attachment_id = media_handle_upload('recipe_image', $post_id);
+    if (!is_wp_error($attachment_id)) {
+        set_post_thumbnail($post_id, $attachment_id);
+    }
+  }
+
+  // ▼ 作品説明（自由記載）を保存
+  if (isset($_POST['recipe_description'])) {
+    update_post_meta($post_id, 'recipe_description', sanitize_textarea_field($_POST['recipe_description']));
+  }
+  // 作り方ステップを post_meta に保存（配列形式で JSON化）
   if (!empty($_POST['steps_text'])) {
-      $instructions = '';
-      foreach ($_POST['steps_text'] as $index => $step) {
-          $instructions .= "【手順 ".($index + 1)."】\n" . sanitize_textarea_field($step) . "\n\n";
-      }
-      wp_update_post([
-          'ID' => $post_id,
-          'post_content' => $instructions
-      ]);
+    $steps_array = array_map('sanitize_textarea_field', $_POST['steps_text']);
+    update_post_meta($post_id, 'steps', json_encode($steps_array, JSON_UNESCAPED_UNICODE));
   }
 
   // 調理時間・材料などのメタ情報も保存（任意）
@@ -101,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               'url'    => esc_url_raw($_POST['ingredient_url'][$index] ?? ''),
           ];
       }
-      update_post_meta($post_id, 'ingredients', wp_json_encode($ingredients));
+      update_post_meta($post_id, 'ingredients', json_encode($ingredients, JSON_UNESCAPED_UNICODE));
   }
 
   // 投稿完了後マイページへリダイレクト
@@ -140,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
  </script>
 
 
+
 <!-- レシピ投稿フォームのメイン部分 -->
 <main class="recipe-container">
   <h1>レシピを投稿する</h1>
@@ -147,23 +158,59 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- 投稿フォーム -->
   <form method="post" class="recipe-form" enctype="multipart/form-data">
 
-    <!-- ▼▼▼投稿の下書きが自動送信される hidden input ▼▼▼ -->
-    <?php if ($editing_post): ?>
-  <input type="hidden" name="draft_post_id" value="<?php echo esc_attr($editing_post->ID); ?>">
+  <!-- ▼▼▼投稿の下書きが自動送信される hidden input ▼▼▼ -->
+  <?php if ($editing_post): ?>
+    <input type="hidden" name="draft_post_id" value="<?php echo esc_attr($editing_post->ID); ?>">
   <?php endif; ?>
-    <input type="hidden" name="submit_type" id="submit_type" value="">
-    <!-- ▲▲▲ hidden input 終了 ▲▲▲ -->
+  <input type="hidden" name="submit_type" id="submit_type" value="">
+  <!-- ▲▲▲ hidden input 終了 ▲▲▲ -->
 
-    <!-- 画像アップロード（アイキャッチ） -->
-    <label for="recipe_image" class="image-upload-area" id="image-preview">
-      <p>作品の写真をのせる</p>
-    </label>
-    <input type="file" name="recipe_image" id="recipe_image" accept="image/*" onchange="previewImage(event)" hidden>
+<!-- アイキャッチ画像アップロード -->
+<div class="featured-image-block">
+  <!-- アップロード前の表示（カメラアイコン） -->
+  <label for="recipe_image" class="image-upload-area" id="upload-prompt" style="display: block;">
+    <img 
+      src="<?php echo get_template_directory_uri(); ?>/images/upload-photo-icon.png" 
+      alt="" 
+      style="width: 60px; opacity: 0.6; border: none;">
+    <p style="margin-top: 10px; font-weight: bold; color: #8b7f6d; font-size: 16px;">作品の写真のせる</p>
+  </label>
+
+  <!-- アップロード後のプレビュー画像もクリックで再選択 -->
+  <label for="recipe_image" id="image-preview" class="image-preview-area" style="display: none;">
+    <?php if ($editing_post): ?>
+      <?php $thumb_url = get_the_post_thumbnail_url($editing_post->ID, 'medium'); ?>
+      <?php if ($thumb_url): ?>
+        <img 
+          src="<?php echo esc_url($thumb_url); ?>" 
+          alt="" 
+          style="max-width: 100%; height: auto; border: none; outline: none; box-shadow: none; border-radius: 6px; object-fit: cover; display: block; margin: 0 auto;">
+      <?php endif; ?>
+    <?php endif; ?>
+  </label>
+
+  <!-- input要素 -->
+  <input 
+    type="file" 
+    name="recipe_image" 
+    id="recipe_image" 
+    accept="image/*" 
+    onchange="previewImage(event)" 
+    hidden>
+</div>
 
     <!-- レシピタイトル -->
-    <label for="recipe_title">レシピ名:</label>
-    <input type="text" name="recipe_title" value="<?php echo $form_title ?? ''; ?>" required>
+    <label for="recipe_title"></label>
+    <input type="text" name="recipe_title" value="<?php echo $form_title ?? ''; ?>" required  placeholder="作品名">
 
+    <!-- ▼▼▼ 自由記載欄（作品の説明やポイントなど） ▼▼▼  phpの前は絶対に改行してはいけない！！！！！！！最初から4文字スペースが入ってしまうため、こだわりポイント〜が表示されなくなる。-->
+    <label for="recipe_description"></label>
+    <textarea
+    name="recipe_description"
+    id="recipe_description"
+    rows="4"
+    placeholder="こだわりポイント、作品のコンセプト、作ったきっかけ など自由にご記入ください"
+    style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px;"><?php echo esc_textarea(get_post_meta($draft_post_id, 'recipe_description', true)); ?></textarea>
     <hr class="step-separator">
 
   <!-- ▼ 材料リスト -->
@@ -218,22 +265,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </form>
 
+<script>
+function previewImage(event) {
+  const reader = new FileReader();
+  reader.onload = function(){
+    const preview = document.getElementById('image-preview');
+    const prompt = document.getElementById('upload-prompt');
+    if (prompt) prompt.style.display = 'none'; // ← アップロード前ラベル非表示に
+    preview.innerHTML = `<img src="${reader.result}" style="max-width: 100%; height: auto; border-radius: 6px; object-fit: contain;">`;
+    preview.style.display = 'block'; // ← プレビュー表示に切り替え
+  };
+  if (event.target.files[0]) {
+    reader.readAsDataURL(event.target.files[0]);
+  }
+}
+</script>
+
 <!-- プレビュー表示エリア -->
 <div id="preview-section" style="display: none;">
   <h2>プレビュー</h2>
   <div class="preview-box">
-  <p><strong>レシピ名:</strong> <span id="preview-title"></span></p>
 
-  <h3>材料</h3>
-  <ul id="preview-ingredients"></ul>
+  <h3>写真</h3>
+  <div id="preview-image" style="margin-bottom: 16px;">
 
-  <h3>作り方</h3>
-  <ol id="preview-steps"></ol>
+    <p><strong>レシピ名:</strong> <span id="preview-title"></span></p>
+
+    <h3>作品の説明</h3>
+    <p id="preview-description"></p>
+
+    <h3>材料</h3>
+    <ul id="preview-ingredients"></ul>
+
+    <h3>作り方</h3>
+    <ol id="preview-steps"></ol>
   </div>
 
   <h3>作成時間</h3>
   <p><strong>調理時間:</strong><span id="preview-time"></span> 分</p>
-  <!-- ✅ 戻るだけでOKなボタン -->
+
   <button type="button" id="back-to-form">編集に戻る</button>
 </div>
 

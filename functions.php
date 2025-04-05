@@ -209,8 +209,29 @@ add_action('wp_ajax_auto_delete_draft', function () {
     if ((int)$author_id !== get_current_user_id()) exit;
   
     if ($post->post_status === 'draft') {
-      wp_delete_post($draft_id, true);
+        // ① タイトルチェック
+        $title_empty = empty(trim($post->post_title));
+      
+        // ② 材料チェック
+        $ingredients = get_post_meta($draft_id, 'ingredients', true);
+        $ingredients_array = json_decode($ingredients, true);
+        $ingredients_empty = empty(array_filter($ingredients_array ?? [], function ($i) {
+            return !empty($i['name']);
+        }));
+      
+        // ③ 作り方チェック
+        $steps = get_post_meta($draft_id, 'steps', true);
+        $steps_array = json_decode($steps, true);
+        $steps_empty = empty(array_filter($steps_array ?? [], function ($s) {
+            return !empty($s);
+        }));
+      
+        // すべて未入力の場合のみ削除
+        if ($title_empty && $ingredients_empty && $steps_empty) {
+          wp_delete_post($draft_id, true);
+        }
     }
   
     exit;
   });
+

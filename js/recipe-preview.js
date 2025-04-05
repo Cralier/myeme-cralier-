@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
       document.getElementById('preview-time').textContent = time;
       document.getElementById('preview-title').textContent = title;
-  
+      document.getElementById('preview-description').innerText =
+      document.getElementById('recipe_description').value;
+
       const ingList = document.getElementById('preview-ingredients');
       ingList.innerHTML = '';
       ingredients.forEach(input => {

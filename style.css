@@ -300,8 +300,28 @@
 
 /* 画像選択エリア */
 .image-upload-area {
-    margin-top: 10px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5ebe1;
+  padding: 40px 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 100%; /* はみ出し防止 */
+  box-sizing: border-box; /* padding を含めた幅で計算 */
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.image-upload-area img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: none !important;
+  outline: none !important;
 }
 
 .image-label {
@@ -315,6 +335,22 @@
     border-radius: 8px;
     overflow: hidden;
     padding: 10px;
+}
+
+#image-preview {
+  width: 100%;
+  aspect-ratio: 3 / 2; /* 比率固定（お好みで変更可） */
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+  display: none;
+}
+
+#image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ← ここがトリミングのキモ */
+  display: block;
 }
 
 .step-image-input {

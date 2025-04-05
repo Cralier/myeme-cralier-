@@ -25,7 +25,7 @@ if (get_current_user_id() !== $user->ID) {
 
 <script>
   if (performance.navigation.type === 2) {
-    // 戻るボタンで来た場合 → 強制リロード
+    // 戻るボタンで来た場合 → 強制リロード　★投稿作成からブラウザバックした場合に、一時的に削除されたはずの下書きが表示されるため
     window.location.reload();
   }
 </script>
