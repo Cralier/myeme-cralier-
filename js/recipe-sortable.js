@@ -1,0 +1,131 @@
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ▼ 並び替えを初期化（材料・作り方）
+    function initSortable() {
+        if ($) {
+          $('#ingredients-wrapper').sortable({
+            handle: '.handle',
+            placeholder: 'sortable-placeholder',
+            tolerance: 'pointer'
+          });
+      
+          $('#steps-container').sortable({
+            handle: '.handle',
+            items: '> .step-item',
+            placeholder: 'sortable-placeholder',
+            cancel: 'input,textarea,button,label',
+            tolerance: 'pointer',
+            update: function () {
+              updateStepLabels(); // 並び替え後にラベル更新
+            }
+          });
+        }
+      }
+  
+
+// ▼ 材料セクション（シンプル版）
+const wrapper = document.getElementById('ingredients-wrapper');
+const addBtn = document.getElementById('add-ingredient');
+
+function createIngredientItem() {
+  const item = document.createElement('div');
+  item.className = 'ingredient-item';
+
+  const handle = document.createElement('div');
+  handle.className = 'handle';
+  handle.textContent = '≡';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.name = 'ingredient_name[]';
+  nameInput.className = 'ingredient-name';
+  nameInput.placeholder = '材料名を入力';
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'url';
+  urlInput.name = 'ingredient_url[]';
+  urlInput.className = 'ingredient-url';
+  urlInput.placeholder = '材料のURL（任意）';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'remove-ingredient';
+  deleteBtn.textContent = '削除';
+  deleteBtn.addEventListener('click', () => {
+    if (document.querySelectorAll('.ingredient-item').length > 1) {
+      item.remove();
+    }
+  });
+
+  item.appendChild(handle);
+  item.appendChild(nameInput);
+  item.appendChild(urlInput);
+  item.appendChild(deleteBtn);
+
+  return item;
+}
+
+if (wrapper && addBtn) {
+  // 初期化
+  wrapper.innerHTML = '';
+  wrapper.appendChild(createIngredientItem());
+
+  addBtn.addEventListener('click', () => {
+    wrapper.appendChild(createIngredientItem());
+    initSortable();
+  });
+}
+  
+    // ▼ 作り方ステップ追加処理
+    const stepContainer = document.getElementById('steps-container');
+    const addStep = document.getElementById('add-step');
+  
+    if (addStep && stepContainer) {
+      addStep.addEventListener('click', () => {
+        const count = stepContainer.querySelectorAll('.step-item').length + 1;
+  
+        const step = document.createElement('div');
+        step.className = 'step-item';
+        step.innerHTML = `
+          <div class="step-header">
+            <span class="handle">≡</span>
+            <span class="step-label">手順 ${count}</span>
+            <button type="button" class="remove-step">この手順を削除</button>
+          </div>
+          <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
+          <div class="image-drop-area">
+            <input type="file" name="steps_image[]" class="step-image-input">
+            <div class="image-preview"></div>
+          </div>
+        `;
+        stepContainer.appendChild(step);
+        updateStepLabels();
+        initSortable();
+      });
+  
+      stepContainer.addEventListener('click', e => {
+        if (e.target.classList.contains('remove-step')) {
+          e.target.closest('.step-item').remove();
+          updateStepLabels();
+        }
+      });
+  
+      function updateStepLabels() {
+        const steps = stepContainer.querySelectorAll('.step-item');
+        steps.forEach((step, index) => {
+          const label = step.querySelector('.step-label');
+          if (label) label.textContent = `手順 ${index + 1}`;
+        });
+      }
+    }
+    
+  
+    // ▼ セレクト以外クリックで全ドロップダウン閉じる
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+    });
+  });
+  
+
