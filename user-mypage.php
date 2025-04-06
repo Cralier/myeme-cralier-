@@ -40,6 +40,16 @@ if (get_current_user_id() !== $user->ID) {
     <h2>こんにちは、<?php echo esc_html($user->display_name); ?> さん</h2>
     <p>こちらはあなた専用のマイページです。</p>
 
+    <?php
+    require_once get_template_directory() . '/functions/genre-ui.php';
+
+    $current_user_id = get_current_user_id();
+    $selected_genres = get_user_meta($current_user_id, 'my_handmade_genres', true);
+    $selected_genres = is_array($selected_genres) ? $selected_genres : [];
+
+    render_handmade_genre_selector($selected_genres);
+    ?>
+
     <section class="saved-section">
         <h3>保存したレシピや材料（※今後の実装）</h3>
         <p>ここに保存機能やおすすめ表示などを追加予定</p>

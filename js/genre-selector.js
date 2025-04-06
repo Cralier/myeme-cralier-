@@ -1,3 +1,5 @@
+console.log('genre-selector.js loaded');
+
 document.addEventListener('DOMContentLoaded', () => {
     const selectedArea = document.querySelector('.genre-selected');
     const dropdown = document.querySelector('.genre-dropdown');

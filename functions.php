@@ -248,3 +248,55 @@ function enqueue_genre_selector_script() {
     }
   }
   add_action('wp_enqueue_scripts', 'enqueue_genre_selector_script');
+
+  function enqueue_mypage_genre_assets() {
+    if (get_query_var('user_mypage')) {
+        wp_enqueue_style('genre-selector-style', get_template_directory_uri());
+
+        wp_enqueue_script(
+            'genre-selector-js',
+            get_template_directory_uri() . '/js/genre-selector.js',
+            [],
+            null,
+            true
+        );
+
+        wp_enqueue_script(
+            'user-genre-selector',
+            get_template_directory_uri() . '/js/user-genre-selector.js',
+            [],
+            null,
+            true
+        );
+
+        wp_localize_script('user-genre-selector', 'UserGenreAjax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+        ]);
+    }
+}
+add_action('wp_enqueue_scripts', 'enqueue_mypage_genre_assets');
+
+
+function save_user_genres() {
+    // ユーザーがログインしていることを確認
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です']);
+        return;
+    }
+
+    $user_id = get_current_user_id();
+
+    // POSTされたジャンルを取得
+    $genres = isset($_POST['genres']) ? json_decode(stripslashes($_POST['genres']), true) : [];
+
+    // 配列であることを確認し、保存
+    if (is_array($genres)) {
+        update_user_meta($user_id, 'my_handmade_genres', $genres);
+        wp_send_json_success(['message' => '保存しました']);
+    } else {
+        wp_send_json_error(['message' => '不正なデータ']);
+    }
+}
+
+add_action('wp_ajax_save_user_genres', 'save_user_genres');
+add_action('wp_ajax_nopriv_save_user_genres', 'save_user_genres');
