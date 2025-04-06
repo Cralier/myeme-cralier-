@@ -166,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- レシピ投稿フォームのメイン部分 -->
 <main class="recipe-container">
-  <h1>レシピを投稿する</h1>
 
   <!-- 投稿フォーム -->
   <form method="post" class="recipe-form" enctype="multipart/form-data">
@@ -215,6 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- レシピタイトル -->
     <label for="recipe_title"></label>
     <input type="text" name="recipe_title" value="<?php echo $form_title ?? ''; ?>" required  placeholder="作品名">
+
+    <!-- ハンドメイドジャンル -->
+    <?php
+    require_once get_template_directory() . '/functions/genre-ui.php';
+    $selected_genres = []; // または下記で投稿から取得
+    // $selected_genres = json_decode(get_post_meta($editing_post->ID, 'handmade_genres', true), true) ?? [];
+    render_handmade_genre_selector($selected_genres);
+    ?>
 
     <!-- ▼▼▼ 自由記載欄（作品の説明やポイントなど） ▼▼▼  phpの前は絶対に改行してはいけない！！！！！！！最初から4文字スペースが入ってしまうため、こだわりポイント〜が表示されなくなる。-->
     <label for="recipe_description"></label>
@@ -342,5 +349,3 @@ function previewImage(event) {
 <!-- jQuery UI Touch Punch（スマホ用補助ライブラリ）※必ずjQuery UIの後 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 
-<!-- 最後に自作の recipe-sortable.js（あなたのJS） -->
-<script src="path/to/recipe-sortable.js"></script>

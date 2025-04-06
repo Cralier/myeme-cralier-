@@ -235,3 +235,16 @@ add_action('wp_ajax_auto_delete_draft', function () {
     exit;
   });
 
+
+function enqueue_genre_selector_script() {
+    if (is_page('submit-recipe')) {
+      wp_enqueue_script(
+        'genre-selector.js',
+        get_template_directory_uri() . '/js/genre-selector.js',
+        [],
+        null,
+        true
+      );
+    }
+  }
+  add_action('wp_enqueue_scripts', 'enqueue_genre_selector_script');

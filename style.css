@@ -931,3 +931,92 @@ textarea[name="steps_text[]"] {
     align-items: stretch;
   }
 }
+
+/*ここからハンドメイドジャンルの装飾*/
+/* ▼ 全体ラッパー枠 */
+.genre-selector {
+  border: 2px solid #EADCC2;
+  border-radius: 12px;
+  padding: 8px;
+  background: #fff8f4;
+}
+
+/* ▼ 選択済みジャンル（上段） */
+.genre-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ▼ ボタンスタイル */
+.genre-tag {
+  border: 1px solid #d0bfae;
+  background: #fff;
+  color: #856e5a;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+/* ▼ 選択されたジャンル（上段用） */
+.genre-tag.selected {
+  background-color: #F5EBE1;
+  color: #856e5a;
+  font-weight: bold;
+  border-color: #BDA58B;
+}
+
+/* ▼ 開閉ボタン */
+.genre-toggle {
+  display: inline-block;
+  cursor: pointer;
+  color: #856e5a;
+  font-size: 14px;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+}
+
+/* ▼ 開閉エリア */
+.genre-dropdown {
+  display: none;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: all 0.2s ease;
+  flex-wrap: wrap;
+  gap: 8px;
+  background-color: #fdf8f2;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.genre-dropdown.open {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ▼ 上部の選択済み＋トグルの配置を整える */
+.genre-selected-toggle-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ▼ 全て表示ボタンの右寄せ */
+.genre-toggle {
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+}
+
+/* ▼ 押した感を少し追加 */
+.genre-toggle:hover {
+  background-color: #f5e8db;
+}
