@@ -51,6 +51,10 @@ function recipe_meta_box_callback($post) {
 }
 
 function save_recipe_meta($post_id) {
+    if (isset($_POST['handmade_genres'])) {
+        $genres = explode(',', sanitize_text_field($_POST['handmade_genres']));
+        update_post_meta($post_id, 'handmade_genres', $genres);
+    }
     if (isset($_POST['cooking_time'])) {
         update_post_meta($post_id, 'cooking_time', sanitize_text_field($_POST['cooking_time']));
     }
@@ -300,3 +304,16 @@ function save_user_genres() {
 
 add_action('wp_ajax_save_user_genres', 'save_user_genres');
 add_action('wp_ajax_nopriv_save_user_genres', 'save_user_genres');
+
+function save_handmade_genres_meta($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (get_post_type($post_id) !== 'recipe') return;
+
+    if (isset($_POST['handmade_genres'])) {
+        $genres_raw = sanitize_text_field($_POST['handmade_genres']);
+        $genres_array = array_filter(array_map('trim', explode(',', $genres_raw)));
+        update_post_meta($post_id, 'handmade_genres', $genres_array);
+    }
+}
+add_action('save_post', 'save_handmade_genres_meta');
+

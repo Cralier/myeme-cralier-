@@ -263,7 +263,7 @@
 /* レシピ投稿フォームの装飾 */
 .recipe-container {
     max-width: 600px;
-    margin: 50px auto;
+    margin: 20px auto;
     background: white;
     padding: 20px;
     border-radius: 10px;
@@ -942,12 +942,34 @@ textarea[name="steps_text[]"] {
 }
 
 /* ▼ 選択済みジャンル（上段） */
+.genre-selected-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start; /* ← space-between を削除 */
+  position: relative;
+  padding-right: 80px; /* ボタンのスペース確保 */
+  min-height: 36px; /* ← ボタンが下がらないよう高さ確保 */
+}
+
 .genre-selected {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  flex: 1 1 auto;
 }
 
+.genre-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #856e5a;
+  cursor: pointer;
+  line-height: 36px; /* 上下中央に揃える */
+}
 /* ▼ ボタンスタイル */
 .genre-tag {
   border: 1px solid #d0bfae;
@@ -969,17 +991,6 @@ textarea[name="steps_text[]"] {
   border-color: #BDA58B;
 }
 
-/* ▼ 開閉ボタン */
-.genre-toggle {
-  display: inline-block;
-  cursor: pointer;
-  color: #856e5a;
-  font-size: 14px;
-  margin-left: auto;
-  background: transparent;
-  border: none;
-}
-
 /* ▼ 開閉エリア */
 .genre-dropdown {
   display: none;
@@ -997,26 +1008,4 @@ textarea[name="steps_text[]"] {
   display: flex;
   opacity: 1;
   transform: scale(1);
-}
-
-/* ▼ 上部の選択済み＋トグルの配置を整える */
-.genre-selected-toggle-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* ▼ 全て表示ボタンの右寄せ */
-.genre-toggle {
-  margin-left: auto;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background-color: transparent;
-}
-
-/* ▼ 押した感を少し追加 */
-.genre-toggle:hover {
-  background-color: #f5e8db;
 }

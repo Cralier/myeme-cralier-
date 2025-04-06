@@ -139,9 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
   }
-
-
-
 get_header(); 
 ?>
 
@@ -218,8 +215,13 @@ document.addEventListener('DOMContentLoaded', () => {
     <!-- ハンドメイドジャンル -->
     <?php
     require_once get_template_directory() . '/functions/genre-ui.php';
-    $selected_genres = []; // または下記で投稿から取得
-    // $selected_genres = json_decode(get_post_meta($editing_post->ID, 'handmade_genres', true), true) ?? [];
+    $editing_post_id = $_GET['draft_post_id'] ?? null;
+    $selected_genres = [];
+
+    if ($editing_post_id) {
+        $selected_genres = get_post_meta($editing_post_id, 'handmade_genres', true);
+        if (!is_array($selected_genres)) $selected_genres = [];
+    }
     render_handmade_genre_selector($selected_genres);
     ?>
 
