@@ -253,6 +253,25 @@ function enqueue_genre_selector_script() {
   }
   add_action('wp_enqueue_scripts', 'enqueue_genre_selector_script');
 
+//検索時の自動表示の追加
+function enqueue_autocomplete_scripts() {
+    if (is_page('submit-recipe')) {
+      wp_enqueue_script(
+        'autocomplete-materials',
+        get_template_directory_uri() . '/js/autocomplete-materials.js',
+        [],
+        null,
+        true
+      );
+      wp_enqueue_style(
+        'autocomplete-style',
+        get_template_directory_uri() . '/css/autocomplete.css'
+      );
+    }
+  }
+  add_action('wp_enqueue_scripts', 'enqueue_autocomplete_scripts');
+
+
   function enqueue_mypage_genre_assets() {
     if (get_query_var('user_mypage')) {
         wp_enqueue_style('genre-selector-style', get_template_directory_uri());
@@ -317,3 +336,4 @@ function save_handmade_genres_meta($post_id) {
 }
 add_action('save_post', 'save_handmade_genres_meta');
 
+require_once get_template_directory() . '/functions/admin-update-materials.php';

@@ -240,6 +240,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2>材料</h2>
     <div id="ingredients-wrapper">
       <!-- 材料ブロックはJSで追加 -->
+      <div id="material-list">
+        <div class="material-row">
+          <input type="text" class="material-name-input" placeholder="材料名を入力" />
+          <input type="url" class="material-url-input" placeholder="URLが自動で入力されます" />
+        </div>
+      </div>
     </div>
     <button type="button" id="add-ingredient">＋ 材料を追加する</button>
   </section>
@@ -251,6 +257,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2>道具</h2>
     <div id="tools-wrapper">
       <!-- JSで追加 -->
+      <div class="material-row">
+          <input type="text" class="material-name-input" placeholder="材料名を入力" />
+          <input type="url" class="material-url-input" placeholder="URLが自動で入力されます" />
+        </div>
+      </div>
     </div>
     <button type="button" id="add-tool">＋ 道具を追加する</button>
   </section>
