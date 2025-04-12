@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <section id="tools-section">
     <h3>道具</h3>
     <div id="tools-wrapper" class="ui-sortable">
-    <p class="auto-added-note" id="tool-hint">自動で追加されます</p>
+      <p class="auto-added-note" id="tool-hint">自動で追加されます</p>
     <!-- ここにJSで道具が挿入される -->
   </div>
 </section>

@@ -466,22 +466,49 @@ button:hover {
   font-size: 1.1em;
 }
 .remove-step {
-  background-color: #f1632a;
+  background-color: #BDA58B;
   color: #fff;
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
 }
+/* ① ハンドル（3本線） */
 .handle {
-  cursor: grab;
+  background-color: transparent;
+  color: #BDA58B;
   font-size: 20px;
-  margin-right: 10px;
-  color: #888;
-  background-color: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  user-select: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
 }
+
+/* ハンドルの中身がアイコン（例：≡）なら以下も */
+.handle::before {
+  font-size: 18px;
+  line-height: 1;
+  color: #BDA58B;
+}
+
+/* ② 削除ボタン */
+.remove-ingredient {
+  background-color: #BDA58B;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  width: 100%;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.remove-ingredient:hover {
+  background-color: #BDA58B;
+}
+
+
 .step-separator {
     border: none;
     height: 1px;
@@ -1090,4 +1117,111 @@ textarea[name="steps_text[]"] {
   color: #999;
   margin-left: 12px;
   vertical-align: middle;
+}
+
+.option-toggle {
+  position: relative;
+  display: inline-block;
+  margin-left: auto;
+}
+
+.option-toggle .dots {
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+}
+
+.option-toggle .remove-ingredient {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: #f7dcdc;
+  color: #b00;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  z-index: 10;
+}
+
+.option-toggle .remove-ingredient.hidden {
+  display: none;
+}
+
+/* 材料・道具共通ボックスデザイン */
+.material-row,
+.tool-row {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #BDA58B;
+  background-color: #F5EBE1;
+  border-radius: 8px;
+  padding: 12px;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+/* ハンドル（ドラッグアイコン） */
+.ingredient-item .handle,
+.tool-item .handle {
+  background-color: #EADCC2;
+  color: #856E5A;
+  font-size: 20px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* テキスト入力欄 */
+.ingredient-item input[type="text"],
+.ingredient-item input[type="url"],
+.tool-item input[type="text"],
+.tool-item input[type="url"] {
+  background-color: #fff;
+  color: #856E5A;
+  border: 1px solid #BDA58B;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 15px;
+}
+
+/* 材料・道具タイトルと補足の行 */
+#ingredients-section h3,
+#tools-section h3 {
+  color: #BDA58B;
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+.auto-added-note {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 13px;
+  color: #BDA58B;
+}
+
+/* 装飾の右端の点アイコン */
+.option-toggle .dots {
+  color: #BDA58B;
+  font-size: 20px;
+  padding: 4px 8px;
+}
+
+.user-item-card {
+  border: 1px solid #ddd;
+  background: #fff8f4;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #856e5a;
+}
+
+.card-url a {
+  color: #8b7f6d;
+  font-size: 13px;
 }

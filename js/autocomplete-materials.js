@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
       div.textContent = item.name;
       div.addEventListener('click', () => {
         addItemToArea(item, item.type); // ▼ 材料/道具を判定して追加
+        saveItemToUser(item.id, item.type); // ← これを追加！
         searchInput.value = '';
         hideDropdown();
       });
@@ -120,3 +121,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function saveItemToUser(id, type) {
+  fetch('/wp-admin/admin-ajax.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      action: 'save_user_item_data',
+      list_type: 'user_item_history', // 履歴用
+      items: JSON.stringify([{ id, type }])
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      console.warn('履歴保存に失敗', data);
+    }
+  });
+}
