@@ -235,38 +235,29 @@ document.addEventListener('DOMContentLoaded', () => {
     style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px;"><?php echo esc_textarea(get_post_meta($draft_post_id, 'recipe_description', true)); ?></textarea>
     <hr class="step-separator">
 
-  <!-- ▼ 材料リスト -->
+    <!-- ▼ 材料・道具 検索 -->
+    <section id="material-tool-search-section">
+    <h2>材料・道具を追加</h2>
+    <input type="text" id="material-tool-search-input" placeholder="材料・道具名を入力" />
+  </section>
+
   <section id="ingredients-section">
-    <h2>材料</h2>
-    <div id="ingredients-wrapper">
-      <!-- 材料ブロックはJSで追加 -->
-      <div id="material-list">
-        <div class="material-row">
-          <input type="text" class="material-name-input" placeholder="材料名を入力" />
-          <input type="url" class="material-url-input" placeholder="URLが自動で入力されます" />
-        </div>
-      </div>
+    <h3>材料</h3>
+    <div id="ingredients-wrapper" class="ui-sortable">
+    <p class="auto-added-note" id="material-hint">自動で追加されます</p>
+      <!-- ここにJSで材料が挿入される -->
     </div>
-    <button type="button" id="add-ingredient">＋ 材料を追加する</button>
   </section>
 
-  <hr class="step-separator">
-
-  <!-- ▼ 道具リスト -->
   <section id="tools-section">
-    <h2>道具</h2>
-    <div id="tools-wrapper">
-      <!-- JSで追加 -->
-      <div class="material-row">
-          <input type="text" class="material-name-input" placeholder="材料名を入力" />
-          <input type="url" class="material-url-input" placeholder="URLが自動で入力されます" />
-        </div>
-      </div>
-    </div>
-    <button type="button" id="add-tool">＋ 道具を追加する</button>
-  </section>
+    <h3>道具</h3>
+    <div id="tools-wrapper" class="ui-sortable">
+    <p class="auto-added-note" id="tool-hint">自動で追加されます</p>
+    <!-- ここにJSで道具が挿入される -->
+  </div>
+</section>
 
-  <hr class="step-separator">
+<hr class="step-separator">
 
     <!-- ▼ 作り方ステップ（手順＋画像） -->
     <section id="steps-wrapper">

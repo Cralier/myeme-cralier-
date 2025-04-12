@@ -1037,23 +1037,57 @@ textarea[name="steps_text[]"] {
 }
 
 .autocomplete-dropdown {
+  position: absolute;
+  z-index: 999;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-top: 6px; /* ← 候補の表示位置調整 */
-  padding: 4px 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  max-height: 180px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-height: 200px;
   overflow-y: auto;
+  width: 100%;
 }
 
 .autocomplete-option {
-  padding: 10px 12px;
-  font-size: 14px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  border-bottom: 1px solid #eee;
 }
-
 .autocomplete-option:hover {
   background-color: #f5f5f5;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.section-label span {
+  font-size: 0.9em;
+  color: #888;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.auto-hint {
+  font-size: 13px;
+  color: #999;
+}
+
+.auto-added-note {
+  display: inline-block;
+  font-size: 13px;
+  color: #999;
+  margin-left: 12px;
+  vertical-align: middle;
 }
