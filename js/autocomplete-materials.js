@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ▼ 材料・道具欄へ追加（既存のHTML構造に準拠）
   function addItemToArea(item, type) {
     const wrapper = (type === 'material')
-      ? document.getElementById('ingredients-wrapper')
+      ? document.getElementById('materials-wrapper')
       : document.getElementById('tools-wrapper');
 
       // すでにあるこの関数の中に追記でOK

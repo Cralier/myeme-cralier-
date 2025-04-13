@@ -492,7 +492,7 @@ button:hover {
 }
 
 /* ② 削除ボタン */
-.remove-ingredient {
+.remove-material {
   background-color: #BDA58B;
   color: white;
   border: none;
@@ -504,7 +504,7 @@ button:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
-.remove-ingredient:hover {
+.remove-material:hover {
   background-color: #BDA58B;
 }
 
@@ -609,14 +609,14 @@ textarea[name="steps_text[]"] {
 }
 
 /* ▼ 材料ブロック全体のラッパー */
-#ingredients-wrapper {
+#materials-wrapper {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 /* ▼ 個別の材料入力ブロック */
-.ingredient-item {
+.material-item {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -629,7 +629,7 @@ textarea[name="steps_text[]"] {
 }
 
 /* ▼ 並び替えハンドル */
-.ingredient-item .handle {
+.material-item .handle {
   cursor: grab;
   font-size: 20px;
   padding: 0 8px;
@@ -641,8 +641,8 @@ textarea[name="steps_text[]"] {
 }
 
 /* ▼ 材料名・URLの入力欄 */
-.ingredient-item input[type="text"],
-.ingredient-item input[type="url"] {
+.material-item input[type="text"],
+.material-item input[type="url"] {
   flex: 1 1 180px;
   padding: 6px 10px;
   font-size: 14px;
@@ -651,7 +651,7 @@ textarea[name="steps_text[]"] {
 }
 
 /* ▼ 削除ボタン */
-.ingredient-item .remove-ingredient {
+.material-item .remove-material {
   background-color: #f65c4b;
   color: white;
   border: none;
@@ -719,7 +719,7 @@ textarea[name="steps_text[]"] {
 
 /* ▼ モバイル対応（〜380px） */
 @media (max-width: 380px) {
-  .ingredient-item {
+  .material-item {
     flex-direction: column;
     align-items: stretch;
   }
@@ -794,7 +794,7 @@ textarea[name="steps_text[]"] {
   background-color: #f0f0f0;
 }
 
-.ingredient-item {
+.material-item {
   margin-bottom: 20px;
 }
 
@@ -803,8 +803,8 @@ textarea[name="steps_text[]"] {
   margin-bottom: 6px;
 }
 
-.ingredient-name,
-.ingredient-url {
+.material-name,
+.material-url {
   display: block;
   width: 100%;
   margin: 6px 0;
@@ -813,7 +813,7 @@ textarea[name="steps_text[]"] {
   border-radius: 6px;
 }
 
-.remove-ingredient {
+.remove-material {
   padding: 6px 10px;
   font-size: 13px;
   border: none;
@@ -1131,7 +1131,7 @@ textarea[name="steps_text[]"] {
   padding: 4px 8px;
 }
 
-.option-toggle .remove-ingredient {
+.option-toggle .remove-material {
   position: absolute;
   right: 0;
   top: 100%;
@@ -1145,7 +1145,7 @@ textarea[name="steps_text[]"] {
   z-index: 10;
 }
 
-.option-toggle .remove-ingredient.hidden {
+.option-toggle .remove-material.hidden {
   display: none;
 }
 
@@ -1162,7 +1162,7 @@ textarea[name="steps_text[]"] {
   margin-bottom: 14px;
 }
 /* ハンドル（ドラッグアイコン） */
-.ingredient-item .handle,
+.material-item .handle,
 .tool-item .handle {
   background-color: #EADCC2;
   color: #856E5A;
@@ -1173,8 +1173,8 @@ textarea[name="steps_text[]"] {
 }
 
 /* テキスト入力欄 */
-.ingredient-item input[type="text"],
-.ingredient-item input[type="url"],
+.material-item input[type="text"],
+.material-item input[type="url"],
 .tool-item input[type="text"],
 .tool-item input[type="url"] {
   background-color: #fff;
@@ -1186,7 +1186,7 @@ textarea[name="steps_text[]"] {
 }
 
 /* 材料・道具タイトルと補足の行 */
-#ingredients-section h3,
+#materials-section h3,
 #tools-section h3 {
   color: #BDA58B;
   font-weight: bold;

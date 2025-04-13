@@ -14,7 +14,7 @@
             <h2>調理時間: <?php echo get_post_meta(get_the_ID(), 'cooking_time', true); ?> 分</h2>
 
             <h2>材料</h2>
-            <p><?php echo nl2br(esc_html(get_post_meta(get_the_ID(), 'ingredients', true))); ?></p>
+            <p><?php echo nl2br(esc_html(get_post_meta(get_the_ID(), 'materials', true))); ?></p>
 
             <h2>作り方</h2>
             <p><?php echo nl2br(esc_html(get_post_meta(get_the_ID(), 'instructions', true))); ?></p>

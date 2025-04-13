@@ -36,14 +36,14 @@ add_action('add_meta_boxes', 'add_recipe_meta_boxes');
 
 function recipe_meta_box_callback($post) {
     $cooking_time = get_post_meta($post->ID, 'cooking_time', true);
-    $ingredients = get_post_meta($post->ID, 'ingredients', true);
+    $materials = get_post_meta($post->ID, 'materials', true);
     $instructions = get_post_meta($post->ID, 'instructions', true);
     ?>
     <label for="cooking_time">調理時間（分）:</label>
     <input type="text" id="cooking_time" name="cooking_time" value="<?php echo esc_attr($cooking_time); ?>" style="width:100%;"><br><br>
 
-    <label for="ingredients">材料:</label>
-    <textarea id="ingredients" name="ingredients" style="width:100%;"><?php echo esc_textarea($ingredients); ?></textarea><br><br>
+    <label for="materials">材料:</label>
+    <textarea id="materials" name="materials" style="width:100%;"><?php echo esc_textarea($materials); ?></textarea><br><br>
 
     <label for="instructions">作り方:</label>
     <textarea id="instructions" name="instructions" style="width:100%;"><?php echo esc_textarea($instructions); ?></textarea>
@@ -58,8 +58,8 @@ function save_recipe_meta($post_id) {
     if (isset($_POST['cooking_time'])) {
         update_post_meta($post_id, 'cooking_time', sanitize_text_field($_POST['cooking_time']));
     }
-    if (isset($_POST['ingredients'])) {
-        update_post_meta($post_id, 'ingredients', sanitize_textarea_field($_POST['ingredients']));
+    if (isset($_POST['materials'])) {
+        update_post_meta($post_id, 'materials', sanitize_textarea_field($_POST['materials']));
     }
     if (isset($_POST['instructions'])) {
         update_post_meta($post_id, 'instructions', sanitize_textarea_field($_POST['instructions']));
@@ -217,9 +217,9 @@ add_action('wp_ajax_auto_delete_draft', function () {
         $title_empty = empty(trim($post->post_title));
       
         // ② 材料チェック
-        $ingredients = get_post_meta($draft_id, 'ingredients', true);
-        $ingredients_array = json_decode($ingredients, true);
-        $ingredients_empty = empty(array_filter($ingredients_array ?? [], function ($i) {
+        $materials = get_post_meta($draft_id, 'materials', true);
+        $materials_array = json_decode($materials, true);
+        $materials_empty = empty(array_filter($materials_array ?? [], function ($i) {
             return !empty($i['name']);
         }));
       
@@ -231,7 +231,7 @@ add_action('wp_ajax_auto_delete_draft', function () {
         }));
       
         // すべて未入力の場合のみ削除
-        if ($title_empty && $ingredients_empty && $steps_empty) {
+        if ($title_empty && $materials_empty && $steps_empty) {
           wp_delete_post($draft_id, true);
         }
     }

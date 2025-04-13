@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ▼ 並び替えを初期化（材料・作り方）
     function initSortable() {
         if ($) {
-          $('#ingredients-wrapper').sortable({
+          $('#materials-wrapper').sortable({
             handle: '.handle',
             placeholder: 'sortable-placeholder',
             tolerance: 'pointer'
@@ -30,12 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
 
 // ▼ 材料セクション（シンプル版）
-const wrapper = document.getElementById('ingredients-wrapper');
-const addBtn = document.getElementById('add-ingredient');
+const wrapper = document.getElementById('materials-wrapper');
+const addBtn = document.getElementById('add-material');
 
-function createIngredientItem() {
+function creatematerialItem() {
   const item = document.createElement('div');
-  item.className = 'ingredient-item';
+  item.className = 'material-item';
 
   const handle = document.createElement('div');
   handle.className = 'handle';
@@ -43,22 +43,22 @@ function createIngredientItem() {
 
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.name = 'ingredient_name[]';
-  nameInput.className = 'ingredient-name';
+  nameInput.name = 'material_name[]';
+  nameInput.className = 'material-name';
   nameInput.placeholder = '材料名を入力';
 
   const urlInput = document.createElement('input');
   urlInput.type = 'url';
-  urlInput.name = 'ingredient_url[]';
-  urlInput.className = 'ingredient-url';
+  urlInput.name = 'material_url[]';
+  urlInput.className = 'material-url';
   urlInput.placeholder = '材料のURL（任意）';
 
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
-  deleteBtn.className = 'remove-ingredient';
+  deleteBtn.className = 'remove-material';
   deleteBtn.textContent = '削除';
   deleteBtn.addEventListener('click', () => {
-    if (document.querySelectorAll('.ingredient-item').length > 1) {
+    if (document.querySelectorAll('.material-item').length > 1) {
       item.remove();
     }
   });
@@ -74,10 +74,10 @@ function createIngredientItem() {
 if (wrapper && addBtn) {
   // 初期化
   wrapper.innerHTML = '';
-  wrapper.appendChild(createIngredientItem());
+  wrapper.appendChild(creatematerialItem());
 
   addBtn.addEventListener('click', () => {
-    wrapper.appendChild(createIngredientItem());
+    wrapper.appendChild(creatematerialItem());
     initSortable();
   });
 }

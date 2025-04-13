@@ -23,7 +23,7 @@ if (!is_user_logged_in()) {
 // フォーム表示用の初期変数
 $form_title = '';
 $form_cooking_time = '';
-$form_ingredients = [];
+$form_materials = [];
 $form_tools = [];
 $form_steps = [];
 $editing_post = null;
@@ -103,16 +103,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       update_post_meta($post_id, 'cooking_time', sanitize_text_field($_POST['cooking_time']));
   }
 
-  if (!empty($_POST['ingredient_name'])) {
-      $ingredients = [];
-      foreach ($_POST['ingredient_name'] as $index => $name) {
-          $ingredients[] = [
-              'select' => sanitize_text_field($_POST['ingredient_select'][$index] ?? ''),
+  if (!empty($_POST['material_name'])) {
+      $materials = [];
+      foreach ($_POST['material_name'] as $index => $name) {
+          $materials[] = [
+              'select' => sanitize_text_field($_POST['material_select'][$index] ?? ''),
               'name'   => sanitize_text_field($name),
-              'url'    => esc_url_raw($_POST['ingredient_url'][$index] ?? ''),
+              'url'    => esc_url_raw($_POST['material_url'][$index] ?? ''),
           ];
       }
-      update_post_meta($post_id, 'ingredients', json_encode($ingredients, JSON_UNESCAPED_UNICODE));
+      update_post_meta($post_id, 'materials', json_encode($materials, JSON_UNESCAPED_UNICODE));
   }
 
   // ▼ 道具の保存
@@ -241,9 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
     <input type="text" id="material-tool-search-input" placeholder="材料・道具名を入力" />
   </section>
 
-  <section id="ingredients-section">
+  <section id="materials-section">
     <h3>材料</h3>
-    <div id="ingredients-wrapper" class="ui-sortable">
+    <div id="materials-wrapper" class="ui-sortable">
     <p class="auto-added-note" id="material-hint">自動で追加されます</p>
       <!-- ここにJSで材料が挿入される -->
     </div>
@@ -279,13 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       <button type="button" id="add-step">＋作り方を追加</button>
     </section>
-
-<hr class="step-separator">
-
-  <!-- 調理時間 -->
-  <label for="cooking_time">調理時間 (分):</label>
-  <input type="number" name="cooking_time" value="<?php echo $form_cooking_time ?? ''; ?>">
-
 
 <hr class="step-separator">
 
@@ -330,14 +323,11 @@ function previewImage(event) {
     <p id="preview-description"></p>
 
     <h3>材料</h3>
-    <ul id="preview-ingredients"></ul>
+    <ul id="preview-materials"></ul>
 
     <h3>作り方</h3>
     <ol id="preview-steps"></ol>
   </div>
-
-  <h3>作成時間</h3>
-  <p><strong>調理時間:</strong><span id="preview-time"></span> 分</p>
 
   <button type="button" id="back-to-form">編集に戻る</button>
 </div>

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function updatePreviewContent() {
       const title = document.querySelector('input[name="recipe_title"]').value;
-      const ingredients = document.querySelectorAll('input[name="ingredient_name[]"]');
+      const materials = document.querySelectorAll('input[name="material_name[]"]');
       const steps = document.querySelectorAll('textarea[name="steps_text[]"]');
       const time = document.querySelector('input[name="cooking_time"]').value;
   
@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('preview-description').innerText =
       document.getElementById('recipe_description').value;
 
-      const ingList = document.getElementById('preview-ingredients');
+      const ingList = document.getElementById('preview-materials');
       ingList.innerHTML = '';
-      ingredients.forEach(input => {
+      materials.forEach(input => {
         if (input.value.trim()) {
           const li = document.createElement('li');
           li.textContent = input.value;
