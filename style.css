@@ -448,19 +448,93 @@ button:hover {
 #steps-wrapper {
   margin-top: 30px;
 }
+
 .step-item {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
 }
+
 .step-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  align-items: center;
 }
+
+.step-label {
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  flex: 1;
+}
+
+.step-content {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.step-content textarea {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+  resize: vertical;
+}
+
+.image-drop-area {
+  width: 120px;
+  min-height: 100px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #fdf9f4;
+}
+
+.image-drop-area img {
+  width: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.step-menu-toggle {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #e86f1a;
+}
+
+.step-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  display: none;
+  z-index: 10;
+}
+
+.step-menu button {
+  display: block;
+  padding: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.step-menu button:hover {
+  background: #f4f4f4;
+}
+
 .step-label {
   font-weight: bold;
   font-size: 1.1em;
@@ -1224,4 +1298,137 @@ textarea[name="steps_text[]"] {
 .card-url a {
   color: #8b7f6d;
   font-size: 13px;
+}
+
+/* ▼ 作り方ステップ全体 */
+.step-item {
+  border: none;
+  border-radius: 8px;
+  background-color: #F5EBE1;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+/* ヘッダー（≡ 手順n ...） */
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* 手順タイトル */
+.step-label {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  color: #856e5a;
+}
+
+/* …ボタン */
+.step-actions {
+  position: relative;
+}
+
+.step-menu-toggle {
+  background: #e86f1a;
+  color: white;
+  font-size: 24px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+/* ドロップダウンメニュー */
+.step-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: none;
+  min-width: 140px;
+  z-index: 20;
+}
+
+.step-menu button {
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.step-menu button:hover {
+  background-color: #f7f7f7;
+}
+
+/* 中身（テキスト + 画像）の横並び */
+.step-content {
+  display: flex;
+  gap: 12px;
+}
+
+/* テキスト欄 */
+.step-content textarea {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 画像アップロード領域 */
+.image-drop-area {
+  width: 120px;
+  min-height: 90px;
+  background: #fdf8f2;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-drop-area img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+
+.step-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  padding: 8px 0;
+  z-index: 1000;
+  width: 160px;
+}
+
+.step-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.step-menu button:hover {
+  background-color: #f5f5f5;
 }

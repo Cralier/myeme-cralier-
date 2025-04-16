@@ -22,9 +22,8 @@ if (!is_user_logged_in()) {
 
 // フォーム表示用の初期変数
 $form_title = '';
-$form_cooking_time = '';
-$form_materials = [];
-$form_tools = [];
+$form_tools = json_decode(get_post_meta($draft_post_id, 'tools', true), true) ?: [];
+$form_materials = json_decode(get_post_meta($draft_post_id, 'materials', true), true) ?: [];
 $form_steps = [];
 $editing_post = null;
 
@@ -52,10 +51,11 @@ if ($draft_post_id) {
 
     $editing_post = $post;
     $form_title = esc_attr($post->post_title);
-    $form_cooking_time = get_post_meta($draft_post_id, 'cooking_time', true);
-    $form_toolss = json_decode(get_post_meta($draft_post_id, 'tools', true), true) ?: [];
+    $form_materials = json_decode(get_post_meta($draft_post_id, 'materials', true), true) ?: [];
+    $form_tools = json_decode(get_post_meta($draft_post_id, 'tools', true), true) ?: [];
     $form_steps = json_decode(get_post_meta($draft_post_id, 'steps', true), true) ?: [];
-}
+    $step_image_urls = json_decode(get_post_meta($draft_post_id, 'steps_image_urls', true), true) ?: [];
+    }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $current_user_id = get_current_user_id();
@@ -93,6 +93,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     update_post_meta($post_id, 'recipe_description', sanitize_textarea_field($_POST['recipe_description']));
   }
   // 作り方ステップを post_meta に保存（配列形式で JSON化）
+  $step_image_urls = [];
+
+  if (!empty($_FILES['steps_image']['name'][0])) {
+      require_once ABSPATH . 'wp-admin/includes/image.php';
+      require_once ABSPATH . 'wp-admin/includes/file.php';
+      require_once ABSPATH . 'wp-admin/includes/media.php';
+  
+      foreach ($_FILES['steps_image']['name'] as $index => $name) {
+          if (!empty($_FILES['steps_image']['tmp_name'][$index])) {
+              $file_array = [
+                  'name'     => $_FILES['steps_image']['name'][$index],
+                  'type'     => $_FILES['steps_image']['type'][$index],
+                  'tmp_name' => $_FILES['steps_image']['tmp_name'][$index],
+                  'error'    => $_FILES['steps_image']['error'][$index],
+                  'size'     => $_FILES['steps_image']['size'][$index]
+              ];
+  
+              // 添付ファイルとしてアップロード
+              $attachment_id = media_handle_sideload($file_array, $post_id);
+              if (!is_wp_error($attachment_id)) {
+                  $step_image_urls[] = wp_get_attachment_url($attachment_id);
+              } else {
+                  $step_image_urls[] = ''; // エラー時は空で埋める
+              }
+          } else {
+              $step_image_urls[] = ''; // 画像が空の場合
+          }
+      }
+  
+      // 保存
+      update_post_meta($post_id, 'steps_image_urls', json_encode($step_image_urls, JSON_UNESCAPED_UNICODE));
+  }
+
+
+
   if (!empty($_POST['steps_text'])) {
     $steps_array = array_map('sanitize_textarea_field', $_POST['steps_text']);
     update_post_meta($post_id, 'steps', json_encode($steps_array, JSON_UNESCAPED_UNICODE));
@@ -190,10 +225,20 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php if ($editing_post): ?>
       <?php $thumb_url = get_the_post_thumbnail_url($editing_post->ID, 'medium'); ?>
       <?php if ($thumb_url): ?>
-        <img 
-          src="<?php echo esc_url($thumb_url); ?>" 
-          alt="" 
-          style="max-width: 100%; height: auto; border: none; outline: none; box-shadow: none; border-radius: 6px; object-fit: cover; display: block; margin: 0 auto;">
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const preview = document.getElementById('image-preview');
+            const prompt = document.getElementById('upload-prompt');
+            const img = document.createElement('img');
+            img.src = '<?php echo esc_url($thumb_url); ?>';
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '6px';
+            img.style.objectFit = 'contain';
+            preview.appendChild(img);
+            preview.style.display = 'block';
+            if (prompt) prompt.style.display = 'none';
+          });
+        </script>
       <?php endif; ?>
     <?php endif; ?>
   </label>
@@ -242,18 +287,38 @@ document.addEventListener('DOMContentLoaded', () => {
   </section>
 
   <section id="materials-section">
-    <h3>材料</h3>
-    <div id="materials-wrapper" class="ui-sortable">
-    <p class="auto-added-note" id="material-hint">自動で追加されます</p>
-      <!-- ここにJSで材料が挿入される -->
-    </div>
-  </section>
+  <h3>材料</h3>
+  <div id="materials-wrapper" class="ui-sortable">
+    <?php if (empty($form_materials)): ?>
+      <p class="auto-added-note" id="material-hint">自動で追加されます</p>
+    <?php endif; ?>
 
-  <section id="tools-section">
-    <h3>道具</h3>
-    <div id="tools-wrapper" class="ui-sortable">
+    <?php foreach ($form_materials as $material): ?>
+      <div class="material-row recipe-sortable-item">
+        <div class="handle ui-sortable-handle">☰</div>
+        <input type="text" name="material_name[]" value="<?php echo esc_attr($material['name'] ?? ''); ?>" class="material-name-input" />
+        <input type="url" name="material_url[]" value="<?php echo esc_url($material['url'] ?? ''); ?>" class="material-url-input" />
+        <button type="button" class="remove-material">削除</button>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<section id="tools-section">
+  <h3>道具</h3>
+  <div id="tools-wrapper" class="ui-sortable">
+    <?php if (empty($form_tools)): ?>
       <p class="auto-added-note" id="tool-hint">自動で追加されます</p>
-    <!-- ここにJSで道具が挿入される -->
+    <?php endif; ?>
+
+    <?php foreach ($form_tools as $tool): ?>
+      <div class="tool-row recipe-sortable-item">
+        <div class="handle ui-sortable-handle">☰</div>
+        <input type="text" name="tool_name[]" value="<?php echo esc_attr($tool['name'] ?? ''); ?>" class="tool-name-input" />
+        <input type="url" name="tool_url[]" value="<?php echo esc_url($tool['url'] ?? ''); ?>" class="tool-url-input" />
+        <button type="button" class="remove-tool">削除</button>
+      </div>
+    <?php endforeach; ?>
   </div>
 </section>
 
@@ -263,20 +328,70 @@ document.addEventListener('DOMContentLoaded', () => {
     <section id="steps-wrapper">
       <h2>作り方</h2>
       <div id="steps-container">
-        <!-- 手順ブロック（初期表示） -->
-        <div class="step-item">
-          <div class="step-header">
-            <span class="handle">≡</span>
-            <span class="step-label">手順 1</span>
-            <button type="button" class="remove-step">この手順を削除</button>
-          </div>
-          <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
-          <div class="image-drop-area">
-            <input type="file" name="steps_image[]" class="step-image-input">
-            <div class="image-preview"></div>
-          </div>
-        </div>
-        </div>
+        <?php
+          $form_steps = json_decode(get_post_meta($draft_post_id, 'steps', true), true) ?: [];
+          $form_images = json_decode(get_post_meta($draft_post_id, 'steps_image_urls', true), true) ?: [];
+
+          if (!empty($form_steps)) {
+            foreach ($form_steps as $index => $text) {
+              $image_url = $form_images[$index] ?? '';
+
+              echo '<div class="step-item">';
+              echo '<div class="step-header">';
+              echo '<span class="handle">≡</span>';
+              echo '<span class="step-label">手順 ' . ($index + 1) . '</span>';
+              echo '<div class="step-actions">';
+              echo '<button type="button" class="step-menu-toggle">⋯</button>';
+              echo '<div class="step-menu" style="display: none;">';
+
+              echo '<button type="button" class="remove-step">作り方を削除</button>';
+              echo '</div></div></div>'; // step-header 終了
+
+              echo '<div class="step-content">';
+              echo '<textarea name="steps_text[]">' . esc_textarea($text) . '</textarea>';
+              echo '<div class="image-drop-area">';
+              echo '<label class="image-upload-label">';
+              echo '<input type="file" name="steps_image[]" class="step-image-input" accept="image/*">';
+              echo '<div class="image-preview">';
+              if (!empty($image_url)) {
+                echo '<img src="' . esc_url($image_url) . '" />';
+              } else {
+                echo '<img src="' . get_template_directory_uri() . '/images/upload-photo-icon.png" />';
+              }
+              echo '</div>';
+              echo '</label></div>';
+              echo '</div>'; // step-content 終了
+              echo '</div>'; // step-item 終了
+            }
+          } else {
+            // ステップが1件もないときの初期表示
+            echo '<div class="step-item">';
+            echo '<div class="step-header">';
+            echo '<span class="handle">≡</span>';
+            echo '<span class="step-label">手順 1</span>';
+            echo '<div class="step-actions">';
+            echo '<button type="button" class="step-menu-toggle">⋯</button>';
+            echo '<div class="step-menu" style="display: none;">';
+            echo '<button type="button" class="remove-step">作り方を削除</button>';
+            echo '</div></div></div>';
+
+            echo '<div class="step-content">';
+            echo '<textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>';
+            echo '<div class="image-drop-area">';
+            echo '<label class="image-upload-label">';
+            echo '<input type="file" name="steps_image[]" class="step-image-input" accept="image/*">';
+            echo '<div class="image-preview">';
+            if (!empty($image_url)) {
+              echo '<img src="' . esc_url($image_url) . '" />';
+            } else {
+              echo '<img src="' . get_template_directory_uri() . '/images/upload-photo-icon.png" />';
+            }
+            echo '</div>';
+            echo '</label></div>';
+            echo '</div></div>';
+          }
+        ?>
+      </div>
       <button type="button" id="add-step">＋作り方を追加</button>
     </section>
 
@@ -307,6 +422,48 @@ function previewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
   }
 }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const imageInputs = document.querySelectorAll('.step-image-input');
+
+  imageInputs.forEach(input => {
+    input.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const preview = event.target.closest('.image-drop-area').querySelector('.image-preview');
+        preview.innerHTML = `<img src="${reader.result}" style="max-width:100%; border-radius: 6px; object-fit: contain;">`;
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 「…」ボタンの開閉処理
+  document.querySelectorAll('.step-menu-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation(); // 他のクリックイベントを防ぐ
+      const menu = toggle.closest('.step-actions').querySelector('.step-menu');
+      const isOpen = menu.style.display === 'block';
+      document.querySelectorAll('.step-menu').forEach(m => m.style.display = 'none');
+      menu.style.display = isOpen ? 'none' : 'block';
+    });
+  });
+
+  // 外部クリックでメニュー閉じる
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.step-menu').forEach(menu => {
+      menu.style.display = 'none';
+    });
+  });
+});
 </script>
 
 <!-- プレビュー表示エリア -->

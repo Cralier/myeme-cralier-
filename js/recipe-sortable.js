@@ -141,32 +141,85 @@ if (toolsWrapper && addToolBtn) {
     if (addStep && stepContainer) {
       addStep.addEventListener('click', () => {
         const count = stepContainer.querySelectorAll('.step-item').length + 1;
-  
+      
         const step = document.createElement('div');
         step.className = 'step-item';
         step.innerHTML = `
           <div class="step-header">
             <span class="handle">≡</span>
             <span class="step-label">手順 ${count}</span>
-            <button type="button" class="remove-step">この手順を削除</button>
+            <div class="step-actions">
+              <button type="button" class="step-menu-toggle">⋯</button>
+              <div class="step-menu" style="display: none;">
+                <button type="button" class="remove-step">作り方を削除</button>
+              </div>
+            </div>
           </div>
-          <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
-          <div class="image-drop-area">
-            <input type="file" name="steps_image[]" class="step-image-input">
-            <div class="image-preview"></div>
+          <div class="step-content">
+            <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
+            <div class="image-drop-area">
+              <label class="image-upload-label">
+                <input type="file" name="steps_image[]" class="step-image-input" accept="image/*">
+                <div class="image-preview">
+                  <img src="${window.uploadIconUrl || '/wp-content/themes/mytheme/images/upload-photo-icon.png'}" />
+                </div>
+              </label>
+            </div>
           </div>
         `;
+      
         stepContainer.appendChild(step);
         updateStepLabels();
         initSortable();
-      });
-  
-      stepContainer.addEventListener('click', e => {
-        if (e.target.classList.contains('remove-step')) {
-          e.target.closest('.step-item').remove();
-          updateStepLabels();
+
+        // 新しく追加されたステップの画像プレビュー機能を初期化
+        const newImageInput = step.querySelector('.step-image-input');
+        if (newImageInput) {
+          newImageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function () {
+              const preview = event.target.closest('.image-drop-area').querySelector('.image-preview');
+              preview.innerHTML = `<img src="${reader.result}" style="max-width:100%; border-radius: 6px; object-fit: contain;">`;
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // 新しく追加されたステップの削除機能を初期化
+        const removeStepBtn = step.querySelector('.remove-step');
+        if (removeStepBtn) {
+          removeStepBtn.addEventListener('click', () => {
+            step.remove();
+            updateStepLabels();
+          });
         }
       });
+
+      // 既存のステップの削除機能を初期化
+      document.querySelectorAll('.remove-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const step = btn.closest('.step-item');
+          if (step) {
+            step.remove();
+            updateStepLabels();
+          }
+        });
+      });
+
+      // ▼ 「⋯」クリックでメニュー開閉
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('step-menu-toggle')) {
+    const menu = e.target.nextElementSibling;
+    if (menu) menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    e.stopPropagation();
+  } else {
+    // メニュー以外クリックで全閉じ
+    document.querySelectorAll('.step-menu').forEach(menu => menu.style.display = 'none');
+  }
+});
   
       function updateStepLabels() {
         const steps = stepContainer.querySelectorAll('.step-item');
