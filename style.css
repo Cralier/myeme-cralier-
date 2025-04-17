@@ -1223,63 +1223,170 @@ textarea[name="steps_text[]"] {
   display: none;
 }
 
-/* 材料・道具共通ボックスデザイン */
+/* 材料・道具共通のスタイル */
 .material-row,
 .tool-row {
   display: flex;
-  flex-direction: column;
-  border: 2px solid #BDA58B;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
   background-color: #F5EBE1;
+  border: 2px solid #BDA58B;
   border-radius: 8px;
-  padding: 12px;
-  gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  position: relative;
 }
+
+/* 入力フィールドのラッパー */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+/* 入力フィールド */
+.material-name-input,
+.material-url-input,
+.tool-name-input,
+.tool-url-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #BDA58B;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 14px;
+}
+
 /* ハンドル（ドラッグアイコン） */
-.material-item .handle,
-.tool-item .handle {
+.material-row .handle,
+.tool-row .handle {
   background-color: #EADCC2;
   color: #856E5A;
   font-size: 20px;
   padding: 6px 10px;
   border-radius: 6px;
-  font-weight: bold;
+  cursor: grab;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
 }
 
-/* テキスト入力欄 */
-.material-item input[type="text"],
-.material-item input[type="url"],
-.tool-item input[type="text"],
-.tool-item input[type="url"] {
-  background-color: #fff;
-  color: #856E5A;
+/* メニューボタン（...） */
+.material-row .step-menu-toggle,
+.tool-row .step-menu-toggle {
+  background: #BDA58B;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+}
+
+/* 省略記号 */
+.dots {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.dots::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: -8px 0 0 white, 8px 0 0 white;
+}
+
+/* メニューボタンホバー時 */
+.material-row .step-menu-toggle:hover,
+.tool-row .step-menu-toggle:hover {
+  background: #a08d73;
+}
+
+/* メニュードロップダウン */
+.material-row .step-menu,
+.tool-row .step-menu {
+  position: absolute;
+  top: 100%;
+  right: 16px;
+  background: white;
   border: 1px solid #BDA58B;
   border-radius: 6px;
-  padding: 10px;
-  font-size: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 120px;
+  margin-top: 4px;
 }
 
-/* 材料・道具タイトルと補足の行 */
+/* 削除ボタン */
+.material-row .remove-material,
+.tool-row .remove-tool {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #856E5A;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.material-row .remove-material:hover,
+.tool-row .remove-tool:hover {
+  background-color: #F5EBE1;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .material-row,
+  .tool-row {
+    flex-wrap: wrap;
+  }
+
+  .input-wrapper {
+    width: 100%;
+  }
+}
+
+/* セクションタイトル */
 #materials-section h3,
 #tools-section h3 {
-  color: #BDA58B;
+  color: #856E5A;
+  font-size: 18px;
+  margin-bottom: 16px;
   font-weight: bold;
-  margin-bottom: 4px;
-  display: inline-block;
 }
 
+/* 自動追加の注釈 */
 .auto-added-note {
-  display: inline-block;
-  margin-left: 12px;
-  font-size: 13px;
-  color: #BDA58B;
+  color: #856E5A;
+  font-size: 14px;
+  margin-left: 8px;
 }
 
-/* 装飾の右端の点アイコン */
-.option-toggle .dots {
-  color: #BDA58B;
-  font-size: 20px;
-  padding: 4px 8px;
+/* ドラッグ中のスタイル */
+.sortable-placeholder {
+  border: 2px dashed #BDA58B;
+  background-color: #F5EBE1;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  height: 60px;
 }
 
 .user-item-card {

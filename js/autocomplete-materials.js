@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
 
   // ▼ 入力監視
-  searchInput.addEventListener('input', () => {
+  searchInput?.addEventListener('input', () => {
     const query = searchInput.value.trim();
     if (!query) {
       hideDropdown();
@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
       div.className = 'autocomplete-option';
       div.textContent = item.name;
       div.addEventListener('click', () => {
-        addItemToArea(item, item.type); // ▼ 材料/道具を判定して追加
-        saveItemToUser(item.id, item.type); // ← これを追加！
+        addItemToArea(item, item.type);
+        saveItemToUser(item.id, item.type);
         searchInput.value = '';
         hideDropdown();
       });
@@ -71,53 +71,106 @@ document.addEventListener('DOMContentLoaded', () => {
     dropdown.style.display = 'none';
   }
 
-  // ▼ 材料・道具欄へ追加（既存のHTML構造に準拠）
+  // ▼ 材料・道具欄へ追加
   function addItemToArea(item, type) {
-    const wrapper = (type === 'material')
-      ? document.getElementById('materials-wrapper')
-      : document.getElementById('tools-wrapper');
+    const targetId = type === 'material' ? 'materials-wrapper' : 'tools-wrapper';
+    const wrapper = document.getElementById(targetId);
+    if (!wrapper) return;
 
-      // すでにあるこの関数の中に追記でOK
-      const hint = document.getElementById(type === 'material' ? 'material-hint' : 'tool-hint');
-      if (hint) hint.remove(); // ← 追加時にヒントを削除
-
+    const hint = document.getElementById(`${type}-hint`);
+    if (hint) hint.remove();
 
     const div = document.createElement('div');
     div.className = `${type}-row recipe-sortable-item`;
+    div.style.cssText = `
+      background-color: #F5EBE1;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    `;
 
     div.innerHTML = `
-      <div class="handle ui-sortable-handle">☰</div>
-      <input type="text" name="${type}_name[]" value="${item.name}" class="${type}-name-input" />
-      <input type="url" name="${type}_url[]" value="${item.URL || ''}" class="${type}-url-input" />
-      <button type="button" class="remove-${type}">削除</button>
+      <div class="handle" style="background-color: #e8dcc7; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; cursor: grab;">≡</div>
+      <div class="input-wrapper" style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+        <input type="text" name="${type}_name[]" value="${item.name}" class="${type}-name-input" placeholder="${type === 'material' ? '材料名を入力' : '道具名を入力'}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+        <input type="url" name="${type}_url[]" value="${item.URL || ''}" class="${type}-url-input" placeholder="URL（任意）" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+      </div>
+      <div class="step-actions" style="position: relative;">
+        <button type="button" class="step-menu-toggle" style="background-color: #bda58b; width: 40px; height: 40px; border: none; border-radius: 6px; color: white; font-size: 20px; cursor: pointer; position: relative;">
+          <span class="dots" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px;">
+            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background-color: white; border-radius: 50%; box-shadow: -8px 0 0 white, 8px 0 0 white;"></span>
+          </span>
+        </button>
+        <div class="step-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 120px; margin-top: 4px; z-index: 1000;">
+          <button type="button" class="remove-${type}" style="width: 100%; padding: 8px 12px; text-align: left; background: none; border: none; color: #856E5A; cursor: pointer;">削除</button>
+        </div>
+      </div>
     `;
 
     wrapper.appendChild(div);
+    setupItemListeners(div);
     updateSortable(wrapper);
+  }
+
+  // ▼ アイテムのイベントリスナー設定
+  function setupItemListeners(item) {
+    const menuToggle = item.querySelector('.step-menu-toggle');
+    const menu = item.querySelector('.step-menu');
+    const removeButton = item.querySelector('.remove-material, .remove-tool');
+
+    if (menuToggle && menu) {
+      menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = menu.style.display === 'block';
+        // 他のメニューを閉じる
+        document.querySelectorAll('.step-menu').forEach(m => {
+          if (m !== menu) m.style.display = 'none';
+        });
+        menu.style.display = isVisible ? 'none' : 'block';
+      });
+    }
+
+    if (removeButton) {
+      removeButton.addEventListener('click', () => {
+        item.remove();
+        const wrapper = item.closest('#materials-wrapper, #tools-wrapper');
+        const type = wrapper.id === 'materials-wrapper' ? 'material' : 'tool';
+        
+        if (wrapper.children.length === 0) {
+          const hint = document.createElement('p');
+          hint.className = 'auto-added-note';
+          hint.id = `${type}-hint`;
+          hint.textContent = '自動で追加されます';
+          wrapper.appendChild(hint);
+        }
+      });
+    }
   }
 
   // ▼ 並び替え初期化
   function updateSortable(wrapper) {
-    if (typeof jQuery === 'undefined' || typeof jQuery(wrapper).sortable !== 'function') return;
-    jQuery(wrapper).sortable({
+    if (typeof $ === 'undefined') return;
+
+    $(wrapper).sortable({
       handle: '.handle',
-      items: '.recipe-sortable-item',
+      placeholder: 'sortable-placeholder',
       tolerance: 'pointer'
     });
   }
-
-  // ▼ 削除処理
-  document.addEventListener('click', (e) => {
-    if (e.target.matches('.remove-material') || e.target.matches('.remove-tool')) {
-      const row = e.target.closest('.recipe-sortable-item');
-      if (row) row.remove();
-    }
-  });
 
   // ▼ 外クリックで閉じる
   document.addEventListener('click', (e) => {
     if (!dropdown.contains(e.target) && e.target !== searchInput) {
       hideDropdown();
+    }
+    if (!e.target.closest('.step-menu-toggle')) {
+      document.querySelectorAll('.step-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
     }
   });
 });
@@ -128,7 +181,7 @@ function saveItemToUser(id, type) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       action: 'save_user_item_data',
-      list_type: 'user_item_history', // 履歴用
+      list_type: 'user_item_history',
       items: JSON.stringify([{ id, type }])
     })
   })

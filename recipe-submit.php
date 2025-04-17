@@ -296,9 +296,16 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php foreach ($form_materials as $material): ?>
       <div class="material-row recipe-sortable-item">
         <div class="handle ui-sortable-handle">☰</div>
-        <input type="text" name="material_name[]" value="<?php echo esc_attr($material['name'] ?? ''); ?>" class="material-name-input" />
-        <input type="url" name="material_url[]" value="<?php echo esc_url($material['url'] ?? ''); ?>" class="material-url-input" />
-        <button type="button" class="remove-material">削除</button>
+        <div class="input-wrapper">
+          <input type="text" name="material_name[]" value="<?php echo esc_attr($material['name'] ?? ''); ?>" class="material-name-input" placeholder="材料名を入力" />
+          <input type="url" name="material_url[]" value="<?php echo esc_url($material['url'] ?? ''); ?>" class="material-url-input" placeholder="材料のURL（任意）" />
+        </div>
+        <div class="step-actions">
+          <button type="button" class="step-menu-toggle">⋯</button>
+          <div class="step-menu" style="display: none;">
+            <button type="button" class="remove-material">削除</button>
+          </div>
+        </div>
       </div>
     <?php endforeach; ?>
   </div>
@@ -314,9 +321,16 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php foreach ($form_tools as $tool): ?>
       <div class="tool-row recipe-sortable-item">
         <div class="handle ui-sortable-handle">☰</div>
-        <input type="text" name="tool_name[]" value="<?php echo esc_attr($tool['name'] ?? ''); ?>" class="tool-name-input" />
-        <input type="url" name="tool_url[]" value="<?php echo esc_url($tool['url'] ?? ''); ?>" class="tool-url-input" />
-        <button type="button" class="remove-tool">削除</button>
+        <div class="input-wrapper">
+          <input type="text" name="tool_name[]" value="<?php echo esc_attr($tool['name'] ?? ''); ?>" class="tool-name-input" placeholder="道具名を入力" />
+          <input type="url" name="tool_url[]" value="<?php echo esc_url($tool['url'] ?? ''); ?>" class="tool-url-input" placeholder="道具のURL（任意）" />
+        </div>
+        <div class="step-actions">
+          <button type="button" class="step-menu-toggle">⋯</button>
+          <div class="step-menu" style="display: none;">
+            <button type="button" class="remove-tool">削除</button>
+          </div>
+        </div>
       </div>
     <?php endforeach; ?>
   </div>
