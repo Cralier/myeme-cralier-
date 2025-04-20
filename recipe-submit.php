@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     id="recipe_description"
     rows="4"
     placeholder="こだわりポイント、作品のコンセプト、作ったきっかけ など自由にご記入ください"
-    style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px;"><?php echo esc_textarea(get_post_meta($draft_post_id, 'recipe_description', true)); ?></textarea>
+    style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #BDA58B; margin-top: 0px;"><?php echo esc_textarea(get_post_meta($draft_post_id, 'recipe_description', true)); ?></textarea>
     <hr class="step-separator">
 
     <!-- ▼ 材料・道具 検索 -->

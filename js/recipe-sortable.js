@@ -36,17 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isToolItem = type === 'tool';
         
         item.className = `${type}-row recipe-sortable-item`;
-        item.style.cssText = `
-            background-color: #F5EBE1;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-        `;
-
+        
         const inputName = isToolItem ? 'tool_name[]' : 'material_name[]';
         const inputUrlName = isToolItem ? 'tool_url[]' : 'material_url[]';
         const placeholder = isToolItem ? '道具名を入力' : '材料名を入力';

@@ -82,31 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const div = document.createElement('div');
     div.className = `${type}-row recipe-sortable-item`;
-    div.style.cssText = `
-      background-color: #F5EBE1;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-    `;
 
     div.innerHTML = `
-      <div class="handle" style="background-color: #e8dcc7; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; cursor: grab;">≡</div>
-      <div class="input-wrapper" style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-        <input type="text" name="${type}_name[]" value="${item.name}" class="${type}-name-input" placeholder="${type === 'material' ? '材料名を入力' : '道具名を入力'}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
-        <input type="url" name="${type}_url[]" value="${item.URL || ''}" class="${type}-url-input" placeholder="URL（任意）" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+      <div class="handle ui-sortable-handle">☰</div>
+      <div class="input-wrapper">
+        <input type="text" name="${type}_name[]" value="${item.name}" class="${type}-name-input" placeholder="${type === 'material' ? '材料名を入力' : '道具名を入力'}">
+        <input type="url" name="${type}_url[]" value="${item.URL || ''}" class="${type}-url-input" placeholder="URL（任意）">
       </div>
-      <div class="step-actions" style="position: relative;">
-        <button type="button" class="step-menu-toggle" style="background-color: #bda58b; width: 40px; height: 40px; border: none; border-radius: 6px; color: white; font-size: 20px; cursor: pointer; position: relative;">
-          <span class="dots" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px;">
-            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background-color: white; border-radius: 50%; box-shadow: -8px 0 0 white, 8px 0 0 white;"></span>
-          </span>
-        </button>
-        <div class="step-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); min-width: 120px; margin-top: 4px; z-index: 1000;">
-          <button type="button" class="remove-${type}" style="width: 100%; padding: 8px 12px; text-align: left; background: none; border: none; color: #856E5A; cursor: pointer;">削除</button>
+      <div class="step-actions">
+        <button type="button" class="step-menu-toggle">⋯</button>
+        <div class="step-menu" style="display: none;">
+          <button type="button" class="remove-${type}">削除</button>
         </div>
       </div>
     `;
