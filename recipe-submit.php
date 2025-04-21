@@ -450,7 +450,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const reader = new FileReader();
       reader.onload = function () {
         const preview = event.target.closest('.image-drop-area').querySelector('.image-preview');
-        preview.innerHTML = `<img src="${reader.result}" style="max-width:100%; border-radius: 6px; object-fit: contain;">`;
+        // 既存の画像を削除
+        preview.innerHTML = '';
+        // 新しい画像を追加
+        const img = document.createElement('img');
+        img.src = reader.result;
+        // アップロードアイコンの場合は特別なスタイルを適用
+        if (reader.result.includes('upload-photo-icon.png')) {
+          img.style.width = '40px';
+          img.style.height = 'auto';
+          img.style.position = 'static';
+          img.style.objectFit = 'contain';
+        }
+        preview.appendChild(img);
       };
       reader.readAsDataURL(file);
     });
