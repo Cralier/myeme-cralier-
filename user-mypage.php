@@ -61,11 +61,36 @@ if (get_current_user_id() !== $user->ID) {
         </div>
         <div class="works-grid">
             <?php
-            // ここに保存した作品のループ処理を追加
-            for ($i = 0; $i < 8; $i++) {
-                echo '<div class="work-item">';
-                echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="保存した作品">';
-                echo '</div>';
+            // ユーザーの保存済みレシピを取得
+            $saved_recipes = get_user_meta($user->ID, 'saved_recipes', true);
+            
+            if (!empty($saved_recipes) && is_array($saved_recipes)) {
+                $args = array(
+                    'post_type' => 'recipe',
+                    'post__in' => $saved_recipes,
+                    'posts_per_page' => 8,
+                    'post_status' => 'publish'
+                );
+                
+                $saved_query = new WP_Query($args);
+                
+                if ($saved_query->have_posts()) {
+                    while ($saved_query->have_posts()) {
+                        $saved_query->the_post();
+                        echo '<a href="' . get_permalink() . '" class="work-item">';
+                        if (has_post_thumbnail()) {
+                            echo get_the_post_thumbnail(get_the_ID(), 'medium');
+                        } else {
+                            echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="保存した作品">';
+                        }
+                        echo '</a>';
+                    }
+                    wp_reset_postdata();
+                } else {
+                    echo '<p>保存した作品はありません。</p>';
+                }
+            } else {
+                echo '<p>保存した作品はありません。</p>';
             }
             ?>
         </div>

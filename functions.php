@@ -1,4 +1,3 @@
-
 <?php
 // テーマの基本設定
 function mytheme_setup() {
@@ -340,3 +339,95 @@ require_once get_template_directory() . '/functions/admin-update-materials.php';
 
 
 add_filter('show_admin_bar', '__return_false');
+
+function mytheme_scripts() {
+    // ... existing enqueue scripts ...
+
+    // レシピ詳細ページのスクリプト
+    if (is_singular('recipe')) {
+        wp_enqueue_script('recipe-detail', get_template_directory_uri() . '/js/recipe-detail.js', array('jquery'), '1.0', true);
+        wp_localize_script('recipe-detail', 'wpApiSettings', array(
+            'nonce' => wp_create_nonce('wp_rest')
+        ));
+    }
+}
+add_action('wp_enqueue_scripts', 'mytheme_scripts');
+
+// レシピ保存用のREST APIエンドポイントを登録
+function register_recipe_save_endpoints() {
+    register_rest_route('wp/v2', '/save-recipe', array(
+        'methods' => 'POST',
+        'callback' => 'handle_save_recipe',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ));
+
+    register_rest_route('wp/v2', '/check-recipe-saved', array(
+        'methods' => 'GET',
+        'callback' => 'check_recipe_saved',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        }
+    ));
+}
+add_action('rest_api_init', 'register_recipe_save_endpoints');
+
+// レシピ保存処理
+function handle_save_recipe($request) {
+    $recipe_id = $request->get_param('recipe_id');
+    $user_id = get_current_user_id();
+    
+    if (!$recipe_id || !$user_id) {
+        return new WP_Error('invalid_data', 'Invalid recipe ID or user ID', array('status' => 400));
+    }
+
+    // ユーザーの保存済みレシピを取得
+    $saved_recipes = get_user_meta($user_id, 'saved_recipes', true);
+    if (!is_array($saved_recipes)) {
+        $saved_recipes = array();
+    }
+
+    // レシピが既に保存されているか確認
+    $is_saved = in_array($recipe_id, $saved_recipes);
+    
+    if ($is_saved) {
+        // 保存済みの場合は削除
+        $saved_recipes = array_diff($saved_recipes, array($recipe_id));
+        $message = 'Recipe removed from saved items';
+        $is_now_saved = false;
+    } else {
+        // 未保存の場合は追加
+        $saved_recipes[] = $recipe_id;
+        $message = 'Recipe saved successfully';
+        $is_now_saved = true;
+    }
+
+    // ユーザーメタを更新
+    update_user_meta($user_id, 'saved_recipes', array_values($saved_recipes));
+
+    return array(
+        'success' => true,
+        'message' => $message,
+        'saved' => $is_now_saved
+    );
+}
+
+// レシピが保存済みかチェック
+function check_recipe_saved($request) {
+    $recipe_id = $request->get_param('recipe_id');
+    $user_id = get_current_user_id();
+    
+    if (!$recipe_id || !$user_id) {
+        return new WP_Error('invalid_data', 'Invalid recipe ID or user ID', array('status' => 400));
+    }
+
+    $saved_recipes = get_user_meta($user_id, 'saved_recipes', true);
+    if (!is_array($saved_recipes)) {
+        $saved_recipes = array();
+    }
+
+    return array(
+        'saved' => in_array($recipe_id, $saved_recipes)
+    );
+}
