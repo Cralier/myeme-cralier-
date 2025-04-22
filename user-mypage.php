@@ -22,14 +22,6 @@ if (get_current_user_id() !== $user->ID) {
 }
 ?>
 
-
-<script>
-  if (performance.navigation.type === 2) {
-    // 戻るボタンで来た場合 → 強制リロード　★投稿作成からブラウザバックした場合に、一時的に削除されたはずの下書きが表示されるため
-    window.location.reload();
-  }
-</script>
-
 <main class="mypage-container">
     <?php if (isset($_GET['submitted'])): ?>
     <div class="notice success">投稿が完了しました！</div>
@@ -37,183 +29,111 @@ if (get_current_user_id() !== $user->ID) {
     <div class="notice draft">下書きとして保存しました。</div>
     <?php endif; ?>
 
-    <h2>こんにちは、<?php echo esc_html($user->display_name); ?> さん</h2>
-    <p>こちらはあなた専用のマイページです。</p>
-
-    <?php
-    require_once get_template_directory() . '/functions/genre-ui.php';
-
-    $current_user_id = get_current_user_id();
-    $selected_genres = get_user_meta($current_user_id, 'my_handmade_genres', true);
-    $selected_genres = is_array($selected_genres) ? $selected_genres : [];
-
-    render_handmade_genre_selector($selected_genres);
-    ?>
-
-    <section class="saved-section">
-        <h3>保存したレシピや材料（※今後の実装）</h3>
-        <p>ここに保存機能やおすすめ表示などを追加予定</p>
+    <!-- プロフィールセクション -->
+    <section class="profile-section">
+        <div class="profile-image">
+            <?php
+            $avatar = get_avatar($user->ID, 120);
+            echo $avatar ? $avatar : '<img src="' . get_template_directory_uri() . '/images/default-avatar.png" alt="プロフィール画像">';
+            ?>
+        </div>
+        <h2><?php echo esc_html($user->display_name); ?></h2>
+        <p class="profile-description">
+            <?php
+            $description = get_user_meta($user->ID, 'description', true);
+            echo $description ? esc_html($description) : '紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。';
+            ?>
+        </p>
+        <a href="#" class="edit-profile-button">登録情報を編集</a>
     </section>
 
-    <section class="user-recipes">
-    <h3>あなたのレシピ一覧</h3>
+    <!-- タブナビゲーション -->
+    <div class="profile-tabs">
+        <button class="profile-tab active" data-tab="works">作品</button>
+        <button class="profile-tab" data-tab="parts">パーツ</button>
+    </div>
 
-    <?php
-    $current_user_id = get_current_user_id();
-
-    $args = array(
-        'author' => $current_user_id,
-        'post_type' => 'recipe',
-        'post_status' => array('publish', 'draft'),
-        'orderby' => 'date',
-        'order' => 'DESC',
-        'posts_per_page' => -1
-    );
-
-    $recipes = get_posts($args);
-
-    if (!empty($recipes)) {
-        foreach ($recipes as $recipe) {
-            $status = get_post_status($recipe->ID);
-            $label = ($status === 'draft') ? '【下書き】' : '';
-            $edit_url = home_url('/submit-recipe/?draft_post_id=' . $recipe->ID);
-            $view_url = get_permalink($recipe->ID);
-            $thumbnail = get_the_post_thumbnail($recipe->ID, 'medium');
-        
-            echo '<article class="user-recipe horizontal-box">';
-            
-            echo '<div class="recipe-text">';
-            echo '<h4>' . esc_html($label . get_the_title($recipe)) . '</h4>';
-            echo '<p>' . esc_html(wp_trim_words($recipe->post_content, 20)) . '</p>';
-            echo '<div class="button-group">';
-            echo '<a class="btn btn-edit" href="' . esc_url($edit_url) . '">編集する</a>';
-            if ($status === 'publish') {
-                echo '<a class="btn btn-view" href="' . esc_url($view_url) . '" target="_blank">公開ページを見る</a>';
+    <!-- 保存セクション -->
+    <section class="saved-section">
+        <div class="section-header">
+            <h3>保存</h3>
+            <a href="#">すべて見る</a>
+        </div>
+        <div class="works-grid">
+            <?php
+            // ここに保存した作品のループ処理を追加
+            for ($i = 0; $i < 8; $i++) {
+                echo '<div class="work-item">';
+                echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="保存した作品">';
+                echo '</div>';
             }
-            echo '</div>';
-            echo '</div>'; // .recipe-text
-        
-            echo '<div class="recipe-thumbnail">';
-            echo $thumbnail ?: '<div class="no-image">No Image</div>';
-            echo '</div>';
-        
-            echo '</article>';
-        }
-    } else {
-        echo '<p>まだ投稿がありません。</p>';
-    }
-    ?>
+            ?>
+        </div>
+    </section>
 
-<style>
-    /*マイページの編集と下書きボタン*/
-    .button-group {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-    }
+    <!-- あなたの作品セクション -->
+    <section class="user-works-section">
+        <div class="section-header">
+            <h3>あなたの作品</h3>
+            <a href="#">すべて見る</a>
+        </div>
+        <div class="works-grid">
+            <?php
+            $args = array(
+                'author' => $user->ID,
+                'post_type' => 'recipe',
+                'post_status' => array('publish', 'draft'),
+                'posts_per_page' => 8
+            );
 
-    .button-group .btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 6px;
-    background-color: #ff6600;
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
-    }
+            $recipes = get_posts($args);
 
-    .button-group .btn:hover {
-    background-color: #e65c00;
-    }
-
-    .button-group .btn-view {
-    background-color: #444;
-    }
-
-    .button-group .btn-view:hover {
-    background-color: #222;
-    }
-</style>
-
-<style>
-    /*レシピ投稿の表示*/
-    .user-recipe.horizontal-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 15px;
-    background: #fff;
-    }
-
-    .recipe-text {
-    flex: 1;
-    margin-right: 15px;
-    }
-
-    .recipe-text h4 {
-    margin: 0 0 5px;
-    font-size: 18px;
-    }
-
-    .recipe-text p {
-    font-size: 14px;
-    color: #333;
-    }
-
-    .recipe-thumbnail {
-    width: 120px;
-    height: 120px;
-    overflow: hidden;
-    border-radius: 6px;
-    background: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    }
-
-    .recipe-thumbnail img {
-    max-width: 100%;
-    height: auto;
-    }
-
-    .no-image {
-    font-size: 12px;
-    color: #888;
-    }
-
-    .button-group {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-    }
-
-    .btn {
-    padding: 8px 14px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    }
-
-    .btn-edit {
-    background-color: #ff6600;
-    color: white;
-    }
-
-    .btn-view {
-    background-color: #333;
-    color: white;
-    }
-</style>
+            if (!empty($recipes)) {
+                foreach ($recipes as $recipe) {
+                    $status_class = $recipe->post_status === 'draft' ? 'draft-item' : '';
+                    $link = $recipe->post_status === 'draft' 
+                        ? home_url('/submit-recipe/?draft_post_id=' . $recipe->ID)
+                        : get_permalink($recipe->ID);
+                    
+                    echo '<a href="' . esc_url($link) . '" class="work-item ' . $status_class . '">';
+                    if (has_post_thumbnail($recipe->ID)) {
+                        echo get_the_post_thumbnail($recipe->ID, 'medium');
+                    } else {
+                        echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="作品サムネイル">';
+                    }
+                    if ($recipe->post_status === 'draft') {
+                        echo '<div class="draft-label">下書き</div>';
+                    }
+                    echo '</a>';
+                }
+            } else {
+                echo '<p>まだ投稿がありません。</p>';
+            }
+            ?>
+        </div>
+    </section>
 
     <a href="<?php echo wp_logout_url(home_url('/login/')); ?>" class="logout-button">ログアウト</a>
 </main>
+
+<script>
+// タブ切り替えの処理
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.profile-tab');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // 全てのタブから active クラスを削除
+            tabs.forEach(t => t.classList.remove('active'));
+            // クリックされたタブに active クラスを追加
+            this.classList.add('active');
+            
+            // ここにタブの切り替え処理を追加
+            const tabName = this.dataset.tab;
+            // 必要に応じて対応するコンテンツを表示/非表示
+        });
+    });
+});
+</script>
 
 <?php get_footer(); ?>
