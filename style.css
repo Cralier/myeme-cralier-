@@ -480,7 +480,7 @@ button:hover {
   padding: 10px;
   border-radius: 6px;
   font-size: 14px;
-  color: #BDA58B;
+  color: #333333;
 }
 
 .step-content textarea::placeholder {
@@ -1463,7 +1463,7 @@ textarea[name="steps_text[]"] {
   padding: 10px;
   border-radius: 6px;
   font-size: 14px;
-  color: #BDA58B;
+  color: #333333;
 }
 
 .step-content textarea::placeholder {
@@ -1546,7 +1546,7 @@ textarea[name="steps_text[]"] {
   border: 1px solid #BDA58B;
   border-radius: 8px;
   font-size: 14px;
-  color: #BDA58B;
+  color: #333333;
 }
 
 #material-tool-search-input::placeholder {
@@ -1648,7 +1648,7 @@ textarea[name="recipe_description"] {
   border: 1px solid #BDA58B;
   border-radius: 8px;
   font-size: 14px;
-  color: #BDA58B;
+  color: #333333;
   margin-bottom: 16px;
   font-weight: normal;
 }
