@@ -1891,6 +1891,7 @@ textarea[name="recipe_description"]:focus {
   }
 
   .mypage-container {
+    margin: 20px auto;
     padding: 20px 8px;
   }
 

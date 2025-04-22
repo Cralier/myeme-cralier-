@@ -337,3 +337,6 @@ function save_handmade_genres_meta($post_id) {
 add_action('save_post', 'save_handmade_genres_meta');
 
 require_once get_template_directory() . '/functions/admin-update-materials.php';
+
+
+add_filter('show_admin_bar', '__return_false');
