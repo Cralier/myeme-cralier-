@@ -326,11 +326,12 @@ add_action('wp_ajax_nopriv_save_user_genres', 'save_user_genres');
 function save_handmade_genres_meta($post_id) {
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
     if (get_post_type($post_id) !== 'recipe') return;
-
+    
     if (isset($_POST['handmade_genres'])) {
-        $genres_raw = sanitize_text_field($_POST['handmade_genres']);
-        $genres_array = array_filter(array_map('trim', explode(',', $genres_raw)));
-        update_post_meta($post_id, 'handmade_genres', $genres_array);
+        $genres = is_array($_POST['handmade_genres']) 
+            ? array_map('sanitize_text_field', $_POST['handmade_genres'])
+            : array(sanitize_text_field($_POST['handmade_genres']));
+        update_post_meta($post_id, 'handmade_genres', $genres);
     }
 }
 add_action('save_post', 'save_handmade_genres_meta');
@@ -431,3 +432,63 @@ function check_recipe_saved($request) {
         'saved' => in_array($recipe_id, $saved_recipes)
     );
 }
+
+// ジャンルURLマッピングを読み込み
+require_once get_template_directory() . '/functions/genre-urls.php';
+
+// レシピのパーマリンク構造を変更
+function custom_recipe_post_link($post_link, $post) {
+    if ($post->post_type === 'recipe') {
+        $genres = get_post_meta($post->ID, 'handmade_genres', true);
+        if (!empty($genres) && is_array($genres)) {
+            $first_genre = $genres[0];
+            // genre-urls.phpのマッピングを使用
+            $genre_slug = get_url_slug_from_genre($first_genre);
+            return home_url("/recipe/{$genre_slug}/{$post->ID}/");
+        } else {
+            return home_url("/recipe/uncategorized/{$post->ID}/");
+        }
+    }
+    return $post_link;
+}
+add_filter('post_type_link', 'custom_recipe_post_link', 10, 2);
+
+// カスタムリライトルールを追加
+function add_custom_rewrite_rules() {
+    // 英語スラッグのURLルール
+    add_rewrite_rule(
+        '^recipe/([^/]+)/([0-9]+)/?$',
+        'index.php?post_type=recipe&p=$matches[2]',
+        'top'
+    );
+    
+    // 未分類のURLルール
+    add_rewrite_rule(
+        '^recipe/uncategorized/([0-9]+)/?$',
+        'index.php?post_type=recipe&p=$matches[1]',
+        'top'
+    );
+}
+add_action('init', 'add_custom_rewrite_rules');
+
+// 古いURLパターンを新しいURLにリダイレクト
+function redirect_old_recipe_urls() {
+    if (is_singular('recipe')) {
+        $post_id = get_the_ID();
+        $current_url = $_SERVER['REQUEST_URI'];
+        $correct_url = get_permalink($post_id);
+        
+        // 現在のURLが正しいURLと異なる場合はリダイレクト
+        if ($current_url !== parse_url($correct_url, PHP_URL_PATH)) {
+            wp_redirect($correct_url, 301);
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'redirect_old_recipe_urls');
+
+// パーマリンク設定が変更された時にリライトルールをフラッシュ
+function flush_rules_on_permalink_change() {
+    flush_rewrite_rules();
+}
+add_action('permalink_structure_changed', 'flush_rules_on_permalink_change');
