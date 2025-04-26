@@ -107,30 +107,22 @@
             </section>
 
             <!-- コメントセクション -->
-            <section class="recipe-comments">
-                <h2>コメント</h2>
-                <div class="comment-form-container">
-                    <?php if (is_user_logged_in()) : ?>
-                        <form class="comment-form" method="post" action="">
-                            <textarea name="comment" placeholder="コメントを入力..."></textarea>
-                            <button type="submit" class="submit-comment">コメントする</button>
-                        </form>
-                    <?php else : ?>
-                        <p class="login-to-comment">
-                            <a href="<?php echo wp_login_url(get_permalink()); ?>">ログイン</a>してコメントを投稿
-                        </p>
-                    <?php endif; ?>
-                </div>
+            <div class="recipe-comments">
+                <h3>コメント/質問</h3>
+                <?php if (is_user_logged_in()): ?>
+                    <form id="recipe-comment-form" data-recipe-id="<?php echo get_the_ID(); ?>">
+                        <textarea placeholder="コメント/質問する" required></textarea>
+                        <button type="submit" class="submit-comment">投稿する</button>
+                    </form>
+                <?php else: ?>
+                    <div class="login-prompt">
+                        コメントするには<a href="<?php echo wp_login_url(get_permalink()); ?>">ログイン</a>してください
+                    </div>
+                <?php endif; ?>
                 <div class="comments-list">
-                    <?php
-                    $comments = get_comments(['post_id' => get_the_ID()]);
-                    wp_list_comments([
-                        'style' => 'div',
-                        'callback' => 'custom_comment_template'
-                    ], $comments);
-                    ?>
+                    <!-- コメントはJavaScriptで動的に読み込まれます -->
                 </div>
-            </section>
+            </div>
         </article>
     <?php endwhile; endif; ?>
 </main>
@@ -148,5 +140,13 @@
         <button class="close-modal">閉じる</button>
     </div>
 </div>
+
+<script>
+    var recipeCommentsData = {
+        rest_url: '<?php echo esc_url_raw(rest_url('recipe/v1/')); ?>',
+        nonce: '<?php echo wp_create_nonce('wp_rest'); ?>',
+        current_user_id: '<?php echo get_current_user_id(); ?>'
+    };
+</script>
 
 <?php get_footer(); ?>

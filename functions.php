@@ -492,3 +492,290 @@ function flush_rules_on_permalink_change() {
     flush_rewrite_rules();
 }
 add_action('permalink_structure_changed', 'flush_rules_on_permalink_change');
+
+// コメント機能用のテーブルを作成
+function create_recipe_comments_table() {
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+    $table_name = $wpdb->prefix . 'recipe_comments';
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        recipe_id bigint(20) NOT NULL,
+        user_id bigint(20) NOT NULL,
+        parent_id bigint(20) DEFAULT 0,
+        comment_text text NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY  (id),
+        KEY recipe_id (recipe_id),
+        KEY user_id (user_id),
+        KEY parent_id (parent_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+add_action('after_switch_theme', 'create_recipe_comments_table');
+
+// コメント投稿用のエンドポイントを登録
+function register_recipe_comment_endpoints() {
+    register_rest_route('recipe/v1', '/comments', array(
+        'methods' => 'POST',
+        'callback' => 'handle_recipe_comment',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        }
+    ));
+
+    register_rest_route('recipe/v1', '/comments/(?P<recipe_id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'get_recipe_comments',
+        'permission_callback' => '__return_true'
+    ));
+
+    // 削除エンドポイントを追加
+    register_rest_route('recipe/v1', '/comments/(?P<comment_id>\d+)', array(
+        'methods' => 'DELETE',
+        'callback' => 'delete_recipe_comment',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        }
+    ));
+}
+add_action('rest_api_init', 'register_recipe_comment_endpoints');
+
+// コメント投稿処理
+function handle_recipe_comment($request) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'recipe_comments';
+    
+    $params = $request->get_json_params();
+    $recipe_id = isset($params['recipe_id']) ? intval($params['recipe_id']) : 0;
+    $comment_text = isset($params['comment_text']) ? sanitize_textarea_field($params['comment_text']) : '';
+    $parent_id = isset($params['parent_id']) ? intval($params['parent_id']) : 0;
+    $user_id = get_current_user_id();
+
+    if (!$recipe_id || !$comment_text) {
+        return new WP_Error('invalid_data', 'Invalid recipe ID or comment text', array('status' => 400));
+    }
+
+    // 親コメントが存在するか確認（返信の場合）
+    if ($parent_id > 0) {
+        $parent_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE id = %d AND recipe_id = %d",
+            $parent_id,
+            $recipe_id
+        ));
+        
+        if (!$parent_exists) {
+            return new WP_Error('invalid_parent', 'Parent comment does not exist', array('status' => 400));
+        }
+    }
+
+    // 日本時間でタイムスタンプを生成
+    $timezone = new DateTimeZone('Asia/Tokyo');
+    $datetime = new DateTime('now', $timezone);
+    $current_time = $datetime->format('Y-m-d H:i:s');
+
+    $result = $wpdb->insert(
+        $table_name,
+        array(
+            'recipe_id' => $recipe_id,
+            'user_id' => $user_id,
+            'parent_id' => $parent_id,
+            'comment_text' => $comment_text,
+            'created_at' => $current_time
+        ),
+        array('%d', '%d', '%d', '%s', '%s')
+    );
+
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not save comment', array('status' => 500));
+    }
+
+    // 新しいコメントのデータを取得
+    $comment = get_recipe_comment($wpdb->insert_id);
+
+    return rest_ensure_response(array(
+        'success' => true,
+        'comment' => $comment
+    ));
+}
+
+// コメント取得処理
+function get_recipe_comments($request) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'recipe_comments';
+    $recipe_id = $request['recipe_id'];
+
+    if (!$recipe_id) {
+        return new WP_Error('invalid_data', 'Invalid recipe ID', array('status' => 400));
+    }
+
+    $comments = $wpdb->get_results($wpdb->prepare(
+        "SELECT c.*, u.display_name, u.user_login 
+         FROM $table_name c 
+         LEFT JOIN $wpdb->users u ON c.user_id = u.ID 
+         WHERE c.recipe_id = %d 
+         ORDER BY c.created_at DESC",
+        $recipe_id
+    ));
+
+    if ($comments === null) {
+        return rest_ensure_response(array(
+            'success' => true,
+            'comments' => array()
+        ));
+    }
+
+    $formatted_comments = array_map(function($comment) {
+        return array(
+            'id' => intval($comment->id),
+            'recipe_id' => intval($comment->recipe_id),
+            'user_id' => intval($comment->user_id),
+            'user_name' => $comment->display_name ?: $comment->user_login,
+            'parent_id' => intval($comment->parent_id),
+            'comment_text' => $comment->comment_text,
+            'created_at' => $comment->created_at,
+            'user_avatar' => get_avatar_url($comment->user_id)
+        );
+    }, $comments);
+
+    return rest_ensure_response(array(
+        'success' => true,
+        'comments' => $formatted_comments
+    ));
+}
+
+// 単一コメント取得
+function get_recipe_comment($comment_id) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'recipe_comments';
+
+    $comment = $wpdb->get_row($wpdb->prepare(
+        "SELECT c.*, u.display_name, u.user_login 
+         FROM $table_name c 
+         LEFT JOIN $wpdb->users u ON c.user_id = u.ID 
+         WHERE c.id = %d",
+        $comment_id
+    ));
+
+    if (!$comment) {
+        return null;
+    }
+
+    return array(
+        'id' => intval($comment->id),
+        'recipe_id' => intval($comment->recipe_id),
+        'user_id' => intval($comment->user_id),
+        'user_name' => $comment->display_name ?: $comment->user_login,
+        'parent_id' => intval($comment->parent_id),
+        'comment_text' => $comment->comment_text,
+        'created_at' => $comment->created_at,
+        'user_avatar' => get_avatar_url($comment->user_id)
+    );
+}
+
+// コメント用のスクリプトとスタイルを読み込み
+function enqueue_recipe_comment_assets() {
+    if (is_singular('recipe')) {
+        wp_enqueue_script(
+            'recipe-comments',
+            get_template_directory_uri() . '/js/recipe-comments.js',
+            array('jquery'),
+            null,
+            true
+        );
+
+        wp_localize_script('recipe-comments', 'recipeCommentsData', array(
+            'rest_url' => rest_url('recipe/v1/'),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'current_user_id' => get_current_user_id(),
+            'user_avatar' => get_avatar_url(get_current_user_id())
+        ));
+
+        wp_enqueue_style(
+            'recipe-comments-style',
+            get_template_directory_uri() . '/css/recipe-comments.css'
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'enqueue_recipe_comment_assets');
+
+// コメント画像のアップロード処理
+function handle_comment_image_upload() {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です。']);
+        return;
+    }
+
+    if (!isset($_FILES['images'])) {
+        wp_send_json_error(['message' => '画像がアップロードされていません。']);
+        return;
+    }
+
+    $uploaded_urls = [];
+    $files = $_FILES['images'];
+    
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+    foreach ($files['name'] as $key => $value) {
+        if ($files['error'][$key] === 0) {
+            $file = array(
+                'name'     => $files['name'][$key],
+                'type'     => $files['type'][$key],
+                'tmp_name' => $files['tmp_name'][$key],
+                'error'    => $files['error'][$key],
+                'size'     => $files['size'][$key]
+            );
+
+            $upload_overrides = array('test_form' => false);
+            $uploaded = wp_handle_upload($file, $upload_overrides);
+
+            if (!isset($uploaded['error'])) {
+                $uploaded_urls[] = $uploaded['url'];
+            }
+        }
+    }
+
+    if (empty($uploaded_urls)) {
+        wp_send_json_error(['message' => '画像のアップロードに失敗しました。']);
+        return;
+    }
+
+    wp_send_json_success(['image_urls' => $uploaded_urls]);
+}
+add_action('wp_ajax_upload_comment_images', 'handle_comment_image_upload');
+
+// コメント削除処理
+function delete_recipe_comment($request) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'recipe_comments';
+    $comment_id = $request['comment_id'];
+    $current_user_id = get_current_user_id();
+
+    // コメントの所有者を確認
+    $comment = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_name WHERE id = %d AND user_id = %d",
+        $comment_id,
+        $current_user_id
+    ));
+
+    if (!$comment) {
+        return new WP_Error('unauthorized', 'You are not authorized to delete this comment', array('status' => 403));
+    }
+
+    // 返信コメントも削除
+    $wpdb->query($wpdb->prepare(
+        "DELETE FROM $table_name WHERE id = %d OR parent_id = %d",
+        $comment_id,
+        $comment_id
+    ));
+
+    return rest_ensure_response(array(
+        'success' => true,
+        'message' => 'Comment deleted successfully'
+    ));
+}
