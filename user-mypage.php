@@ -110,7 +110,6 @@ if (get_current_user_id() !== $user->ID) {
                 'post_status' => array('publish', 'draft'),
                 'posts_per_page' => 8
             );
-
             $recipes = get_posts($args);
 
             if (!empty($recipes)) {
@@ -119,17 +118,31 @@ if (get_current_user_id() !== $user->ID) {
                     $link = $recipe->post_status === 'draft' 
                         ? home_url('/submit-recipe/?draft_post_id=' . $recipe->ID)
                         : get_permalink($recipe->ID);
-                    
-                    echo '<a href="' . esc_url($link) . '" class="work-item ' . $status_class . '">';
-                    if (has_post_thumbnail($recipe->ID)) {
-                        echo get_the_post_thumbnail($recipe->ID, 'medium');
-                    } else {
-                        echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="作品サムネイル">';
-                    }
-                    if ($recipe->post_status === 'draft') {
-                        echo '<div class="draft-label">下書き</div>';
-                    }
-                    echo '</a>';
+                    ?>
+                    <div class="work-item <?php echo $status_class; ?>" data-recipe-id="<?php echo esc_attr($recipe->ID); ?>">
+                        <a href="<?php echo esc_url($link); ?>">
+                            <?php if (has_post_thumbnail($recipe->ID)) {
+                                echo get_the_post_thumbnail($recipe->ID, 'medium');
+                            } else {
+                                echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="作品サムネイル">';
+                            } ?>
+                        </a>
+                        <div class="work-menu-wrapper">
+                            <button class="work-menu-toggle" type="button">
+                                <span class="work-menu-circle">
+                                    <img src="<?php echo get_template_directory_uri(); ?>/images/edit_post.png" alt="編集" class="work-menu-icon">
+                                </span>
+                            </button>
+                            <div class="work-menu-dropdown" style="display:none;">
+                                <button class="work-edit-btn" data-recipe-id="<?php echo esc_attr($recipe->ID); ?>">編集</button>
+                                <button class="work-delete-btn" data-recipe-id="<?php echo esc_attr($recipe->ID); ?>">削除</button>
+                            </div>
+                        </div>
+                        <?php if ($recipe->post_status === 'draft') : ?>
+                            <div class="draft-label">下書き</div>
+                        <?php endif; ?>
+                    </div>
+                    <?php
                 }
             } else {
                 echo '<p>まだ投稿がありません。</p>';
@@ -157,6 +170,44 @@ document.addEventListener('DOMContentLoaded', function() {
             const tabName = this.dataset.tab;
             // 必要に応じて対応するコンテンツを表示/非表示
         });
+    });
+});
+
+jQuery(function($){
+    // メニューのトグル
+    $('.works-grid').on('click', '.work-menu-toggle', function(e){
+        e.stopPropagation();
+        var $dropdown = $(this).siblings('.work-menu-dropdown');
+        $('.work-menu-dropdown').not($dropdown).hide();
+        $dropdown.toggle();
+    });
+    // 編集ボタン
+    $('.works-grid').on('click', '.work-edit-btn', function(){
+        var recipeId = $(this).data('recipe-id');
+        window.location.href = '/submit-recipe/?draft_post_id=' + recipeId;
+    });
+    // 削除ボタン
+    $('.works-grid').on('click', '.work-delete-btn', function(){
+        var recipeId = $(this).data('recipe-id');
+        if(confirm('本当にこの作品を削除しますか？')){
+            $.ajax({
+                url: '/wp-json/wp/v2/recipe/' + recipeId,
+                method: 'DELETE',
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader('X-WP-Nonce', '<?php echo wp_create_nonce('wp_rest'); ?>');
+                },
+                success: function(){
+                    $('.work-item[data-recipe-id="'+recipeId+'"]').fadeOut(300, function(){$(this).remove();});
+                },
+                error: function(){
+                    alert('削除に失敗しました');
+                }
+            });
+        }
+    });
+    // 外側クリックでメニュー閉じる
+    $(document).on('click', function(){
+        $('.work-menu-dropdown').hide();
     });
 });
 </script>
