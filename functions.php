@@ -267,8 +267,25 @@ function enqueue_autocomplete_scripts() {
         get_template_directory_uri() . '/css/autocomplete.css'
       );
     }
-  }
-  add_action('wp_enqueue_scripts', 'enqueue_autocomplete_scripts');
+    if (get_query_var('mypage_tools')) {
+      wp_enqueue_script(
+        'mypage-tools',
+        get_template_directory_uri() . '/js/mypage-tools.js',
+        [],
+        null,
+        true
+      );
+      wp_enqueue_style(
+        'autocomplete-style',
+        get_template_directory_uri() . '/css/autocomplete.css'
+      );
+      wp_localize_script('mypage-tools', 'MypageToolsAjax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('mypage_tools_nonce')
+      ]);
+    }
+}
+add_action('wp_enqueue_scripts', 'enqueue_autocomplete_scripts');
 
 
   function enqueue_mypage_genre_assets() {
@@ -779,3 +796,169 @@ function delete_recipe_comment($request) {
         'message' => 'Comment deleted successfully'
     ));
 }
+
+// mypage/ユーザー名/tools 用リライトルール
+add_action('init', function() {
+    add_rewrite_rule(
+        '^mypage/([^/]+)/tools/?$',
+        'index.php?user_mypage=$matches[1]&mypage_tools=1',
+        'top'
+    );
+});
+
+// クエリ変数追加
+add_filter('query_vars', function($vars) {
+    $vars[] = 'user_mypage';
+    $vars[] = 'mypage_tools';
+    return $vars;
+});
+
+// テンプレート振り分け
+add_action('template_include', function($template) {
+    if (get_query_var('mypage_tools')) {
+        $custom = locate_template('mypage-tools.php');
+        if ($custom) return $custom;
+    }
+    return $template;
+});
+
+add_action('wp_ajax_save_user_item_data', function() {
+    check_ajax_referer('mypage_tools_nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です']);
+        return;
+    }
+    $user_id = get_current_user_id();
+    $items = isset($_POST['items']) ? json_decode(stripslashes($_POST['items']), true) : [];
+    if (!is_array($items)) $items = [];
+    $saved = get_user_meta($user_id, 'mypage_tools', true);
+    if (!is_array($saved)) $saved = [];
+    foreach ($items as $item) {
+        // id重複を防ぐ
+        $exists = false;
+        foreach ($saved as $s) {
+            if (isset($s['id']) && $s['id'] === ($item['id'] ?? '')) {
+                $exists = true;
+                break;
+            }
+        }
+        if (!$exists && isset($item['id']) && $item['id'] !== '') {
+            $saved[] = [
+                'id'    => $item['id'],
+                'name'  => $item['name'] ?? '',
+                'url'   => $item['url'] ?? '',
+                'image' => $item['image'] ?? '',
+                'type'  => $item['type'] ?? ''
+            ];
+        }
+    }
+    // 空要素・nullを除去
+    $saved = array_values(array_filter($saved, function($v) {
+        return is_array($v) && isset($v['id']) && $v['id'] !== '';
+    }));
+    error_log('保存前: ' . print_r($saved, true));
+    $result = update_user_meta($user_id, 'mypage_tools', $saved);
+    error_log('update_user_meta result: ' . print_r($result, true));
+    $latest = get_user_meta($user_id, 'mypage_tools', true);
+    if (!is_array($latest)) $latest = [];
+    error_log('保存後: ' . print_r($latest, true));
+    wp_send_json_success(['message' => '保存しました', 'items' => $latest]);
+});
+
+add_action('wp_ajax_get_user_item_data', function() {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です']);
+        return;
+    }
+    $user_id = get_current_user_id();
+    $items = get_user_meta($user_id, 'mypage_tools', true);
+    if (!is_array($items)) $items = [];
+    // 空要素・nullを除去
+    $items = array_values(array_filter($items, function($v) {
+        return is_array($v) && isset($v['id']) && $v['id'] !== '';
+    }));
+    error_log('取得: ' . print_r($items, true));
+    wp_send_json_success(['items' => $items]);
+});
+
+// usermeta保存・取得テスト用ショートコード
+add_shortcode('usermeta_test', function() {
+    if (!is_user_logged_in()) return 'ログインしてください';
+    $user_id = get_current_user_id();
+    if (isset($_GET['save_test'])) {
+        $test = [['id' => 'test', 'name' => 'テスト']];
+        update_user_meta($user_id, 'mypage_tools', $test);
+        return '保存しました';
+    }
+    $data = get_user_meta($user_id, 'mypage_tools', true);
+    return '<pre>' . print_r($data, true) . '</pre>';
+});
+
+// ユーザーの道具・材料IDのみ保存
+add_action('wp_ajax_save_user_tool_ids', function() {
+    check_ajax_referer('mypage_tools_nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です']);
+        return;
+    }
+    $user_id = get_current_user_id();
+    $ids = isset($_POST['ids']) ? json_decode(stripslashes($_POST['ids']), true) : [];
+    if (!is_array($ids)) $ids = [];
+    update_user_meta($user_id, 'mypage_tools_ids', $ids);
+    wp_send_json_success(['message' => '保存しました']);
+});
+
+// ユーザーの道具・材料IDから詳細情報を返す
+add_action('wp_ajax_get_user_tool_data', function() {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'ログインが必要です']);
+        return;
+    }
+    $user_id = get_current_user_id();
+    $ids = get_user_meta($user_id, 'mypage_tools_ids', true);
+    if (!is_array($ids)) $ids = [];
+    $tools_items = [];
+    $materials_items = [];
+
+    $materials = json_decode(file_get_contents(ABSPATH . 'wp-content/uploads/autocomplete/materials.json'), true);
+    $tools = json_decode(file_get_contents(ABSPATH . 'wp-content/uploads/autocomplete/tools.json'), true);
+
+    $materials_map = [];
+    foreach ($materials ?: [] as $item) {
+        if (isset($item['id'])) $materials_map[(string)$item['id']] = $item;
+    }
+    $tools_map = [];
+    foreach ($tools ?: [] as $item) {
+        if (isset($item['id'])) $tools_map[(string)$item['id']] = $item;
+    }
+
+    foreach ($ids as $id) {
+        $sid = (string)$id;
+        if (isset($tools_map[$sid])) {
+            $tools_items[] = [
+                'id'    => $sid,
+                'name'  => $tools_map[$sid]['name'] ?? '',
+                'url'   => $tools_map[$sid]['URL'] ?? $tools_map[$sid]['url'] ?? '',
+                'image' => $tools_map[$sid]['Image'] ?? $tools_map[$sid]['image'] ?? '',
+                'type'  => 'tool',
+            ];
+        }
+        if (isset($materials_map[$sid])) {
+            $materials_items[] = [
+                'id'    => $sid,
+                'name'  => $materials_map[$sid]['name'] ?? '',
+                'url'   => $materials_map[$sid]['URL'] ?? $materials_map[$sid]['url'] ?? '',
+                'image' => $materials_map[$sid]['Image'] ?? $materials_map[$sid]['image'] ?? '',
+                'type'  => 'material',
+            ];
+        }
+    }
+    // 「全て」はtools_items＋materials_items（ID重複なし前提で単純合体）
+    $all_items = array_merge($tools_items, $materials_items);
+
+    wp_send_json_success([
+        'tools' => $tools_items,
+        'materials' => $materials_items,
+        'all' => $all_items
+    ]);
+});
