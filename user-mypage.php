@@ -24,9 +24,24 @@ if (get_current_user_id() !== $user->ID) {
 
 <main class="mypage-container">
     <?php if (isset($_GET['submitted'])): ?>
-    <div class="notice success">投稿が完了しました！</div>
+    <div class="notice success" id="post-success-message">投稿が完了しました！</div>
+    <script>
+      // 表示後、URLから ?submitted=1 を消す
+      if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('submitted');
+        window.history.replaceState(null, '', url);
+      }
+    </script>
     <?php elseif (isset($_GET['drafted'])): ?>
-    <div class="notice draft">下書きとして保存しました。</div>
+    <div class="notice draft" id="post-draft-message">下書きとして保存しました。</div>
+    <script>
+      if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('drafted');
+        window.history.replaceState(null, '', url);
+      }
+    </script>
     <?php endif; ?>
 
     <!-- プロフィールセクション -->
@@ -178,18 +193,38 @@ if (get_current_user_id() !== $user->ID) {
                 <h3>あなたの材料・道具</h3>
                 <a href="<?php echo home_url('/mypage/' . $user->user_login . '/tools'); ?>">すべて見る</a>
             </div>
+            <?php
+            // デバッグ用: ユーザーメタ全体を出力
+            echo '<pre style="font-size:10px;overflow-x:auto;background:#fffbe6;border:1px solid #e0c97f;">';
+            print_r(get_user_meta($user->ID));
+            echo '</pre>';
+            ?>
             <div class="works-grid">
                 <?php
                 // ユーザーの保存済み材料を取得
                 $saved_materials = get_user_meta($user->ID, 'saved_materials', true);
+                $saved_tools = get_user_meta($user->ID, 'saved_tools', true);
                 
+                // 材料と道具を結合して最初の6個を表示
+                $all_items = array();
                 if (!empty($saved_materials) && is_array($saved_materials)) {
-                    foreach ($saved_materials as $material) {
-                        echo '<div class="work-item"><img src="' . esc_url($material) . '" alt="保存した材料"></div>';
-    }
+                    $all_items = array_merge($all_items, $saved_materials);
+                }
+                if (!empty($saved_tools) && is_array($saved_tools)) {
+                    $all_items = array_merge($all_items, $saved_tools);
+                }
+                
+                if (!empty($all_items)) {
+                    // 最初の6個のみ表示
+                    $display_items = array_slice($all_items, 0, 6);
+                    foreach ($display_items as $item) {
+                        echo '<div class="work-item">';
+                        echo '<img src="' . esc_url($item) . '" alt="材料・道具">';
+                        echo '</div>';
+                    }
                 } else {
-                    echo '<p>保存した材料はありません。</p>';
-    }
+                    echo '<p>保存した材料・道具はありません。</p>';
+                }
                 ?>
             </div>
         </section>
