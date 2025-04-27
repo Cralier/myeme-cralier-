@@ -138,11 +138,15 @@ if (get_current_user_id() !== $user->ID) {
                                 <?php if (has_post_thumbnail($recipe->ID)) {
                                     echo get_the_post_thumbnail($recipe->ID, 'medium');
                                 } else {
-                                    echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="作品サムネイル">';
+                                    if ($recipe->post_status === 'draft') {
+                                        echo '<img src="' . get_template_directory_uri() . '/images/draft_sub_picture.png" alt="下書きサムネイル">';
+                                    } else {
+                                        echo '<img src="' . get_template_directory_uri() . '/images/placeholder.jpg" alt="作品サムネイル">';
+                                    }
                                 } ?>
                             </a>
-                            <div class="work-menu-wrapper">
-                                <button class="work-menu-toggle" type="button">
+                            <div class="work-menu-wrapper efit_button-wrapper">
+                                <button class="work-menu-toggle efit_button" type="button">
                                     <span class="work-menu-circle">
                                         <img src="<?php echo get_template_directory_uri(); ?>/images/edit_post.png" alt="編集" class="work-menu-icon">
                                     </span>
@@ -153,7 +157,7 @@ if (get_current_user_id() !== $user->ID) {
                                 </div>
                             </div>
                             <?php if ($recipe->post_status === 'draft') : ?>
-                                <div class="draft-label">下書き</div>
+                                <div class="draft-label-center">下書き</div>
                             <?php endif; ?>
                         </div>
                         <?php

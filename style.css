@@ -234,7 +234,7 @@
     position: fixed;
     bottom: 80px;  /* 画面下からの距離 */
     right: 20px;   /* 画面右からの距離 */
-    background: #ff6600;  /* ボタンの色（オレンジ） */
+    background: #BDA58B;  /* ボタンの色（オレンジ） */
     color: white;
     padding: 15px 20px;
     font-size: 16px;
@@ -2779,6 +2779,64 @@ textarea[name="recipe_description"]:focus {
     color: #BDA58B;
     border-color: #BDA58B;
     text-decoration: none;
+}
+
+.work-item.draft-item img {
+    filter: brightness(0.7);
+}
+
+.draft-label-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* .draft-label は不要なら削除（他で使っていなければ） */
+.draft-label {
+    display: none;
+}
+
+.efit_button-wrapper {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+}
+.efit_button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.efit_button .work-menu-circle {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.efit_button .work-menu-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 0 !important;
 }
 
 
