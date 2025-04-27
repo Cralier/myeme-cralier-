@@ -61,7 +61,7 @@ if (get_current_user_id() !== $user->ID) {
                 <a href="#">すべて見る</a>
             </div>
             <div class="works-grid">
-                <?php
+    <?php
                 // ユーザーの保存済みレシピを取得
                 $saved_recipes = get_user_meta($user->ID, 'saved_recipes', true);
                 
@@ -103,16 +103,16 @@ if (get_current_user_id() !== $user->ID) {
             </div>
             <div class="works-grid">
                 <?php
-                $args = array(
+    $args = array(
                     'author' => $user->ID,
-                    'post_type' => 'recipe',
-                    'post_status' => array('publish', 'draft'),
+        'post_type' => 'recipe',
+        'post_status' => array('publish', 'draft'),
                     'posts_per_page' => 8
-                );
-                $recipes = get_posts($args);
+    );
+    $recipes = get_posts($args);
 
-                if (!empty($recipes)) {
-                    foreach ($recipes as $recipe) {
+    if (!empty($recipes)) {
+        foreach ($recipes as $recipe) {
                         $status_class = $recipe->post_status === 'draft' ? 'draft-item' : '';
                         $link = $recipe->post_status === 'draft' 
                             ? home_url('/submit-recipe/?draft_post_id=' . $recipe->ID)
@@ -142,11 +142,11 @@ if (get_current_user_id() !== $user->ID) {
                             <?php endif; ?>
                         </div>
                         <?php
-                    }
-                } else {
-                    echo '<p>まだ投稿がありません。</p>';
-                }
-                ?>
+        }
+    } else {
+        echo '<p>まだ投稿がありません。</p>';
+    }
+    ?>
             </div>
         </section>
     </div>
@@ -166,10 +166,10 @@ if (get_current_user_id() !== $user->ID) {
                 if (!empty($saved_parts) && is_array($saved_parts)) {
                     foreach ($saved_parts as $part) {
                         echo '<div class="work-item"><img src="' . esc_url($part) . '" alt="保存したパーツ"></div>';
-                    }
+    }
                 } else {
                     echo '<p>保存したパーツはありません。</p>';
-                }
+    }
                 ?>
             </div>
         </section>
@@ -186,10 +186,10 @@ if (get_current_user_id() !== $user->ID) {
                 if (!empty($saved_materials) && is_array($saved_materials)) {
                     foreach ($saved_materials as $material) {
                         echo '<div class="work-item"><img src="' . esc_url($material) . '" alt="保存した材料"></div>';
-                    }
+    }
                 } else {
                     echo '<p>保存した材料はありません。</p>';
-                }
+    }
                 ?>
             </div>
         </section>

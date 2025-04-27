@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadData() {
     try {
       const matRes = await fetch('/wp-content/uploads/autocomplete/materials.json');
-      const toolRes = await fetch('http://cralier.local/wp-content/uploads/autocomplete/tools.json');
+      const toolRes = await fetch('/wp-content/uploads/autocomplete/tools.json');
       console.log('fetch: /wp-content/uploads/autocomplete/materials.json');
       console.log('fetch: /wp-content/uploads/autocomplete/tools.json');
       console.log('toolRes.url:', toolRes.url);
@@ -66,6 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } catch (err) {
       console.error('JSON取得失敗:', err);
+      // ▼ Show user-facing error
+      const errorMsg = document.createElement('div');
+      errorMsg.className = 'tools-fetch-error';
+      errorMsg.textContent = '材料・道具データの取得に失敗しました。ページを再読み込みしてください。';
+      document.getElementById('materials-wrapper')?.appendChild(errorMsg);
+      document.getElementById('tools-wrapper')?.appendChild(errorMsg.cloneNode(true));
+      document.getElementById('materials-only-wrapper')?.appendChild(errorMsg.cloneNode(true));
     }
   }
   // 先にデータロード
@@ -124,9 +131,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ▼ 候補を表示
   function renderDropdown(items) {
-    console.log('ドロップダウン候補:', items);
     dropdown.innerHTML = '';
-    if (!items.length) return hideDropdown();
+    if (!items.length) {
+      // ▼ Show 'No results' if search input is not empty
+      if (searchInput.value.trim()) {
+        const noResult = document.createElement('div');
+        noResult.className = 'autocomplete-no-result';
+        noResult.textContent = '該当する材料・道具がありません';
+        dropdown.appendChild(noResult);
+        const rect = searchInput.getBoundingClientRect();
+        dropdown.style.display = 'block';
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = `${window.scrollY + rect.bottom + 4}px`;
+        dropdown.style.left = `${window.scrollX + rect.left}px`;
+        dropdown.style.width = `${rect.width}px`;
+      } else {
+        hideDropdown();
+      }
+      return;
+    }
 
     const rect = searchInput.getBoundingClientRect();
     dropdown.style.display = 'block';
@@ -234,13 +257,61 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="tmr-handle">≡</div>
         <div class="tmr-info">
           <div class="tmr-name">${item.name}</div>
-          ${item.url ? `<div class="tmr-url"><a href="${item.url}" target="_blank">${item.url}</a></div>` : ''}
+          ${item.url ? `<div class=\"tmr-url\"><a href=\"${item.url}\" target=\"_blank\">${item.url}</a></div>` : ''}
         </div>
         <div class="tmr-img">
           <img src="${item.image || '/wp-content/themes/mytheme/images/placeholder.jpg'}" alt="${item.name}">
         </div>
+        <button class="Tool_delete_bottun" title="削除">×</button>
       </div>
     `;
+    // ▼ 削除ボタンのイベント
+    div.querySelector('.Tool_delete_bottun').addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!confirm('このアイテムを削除しますか？')) return;
+      const id = div.dataset.id;
+      // サーバーに削除リクエスト（ID配列から除外して保存）
+      const idsToSave = savedIds.filter(savedId => savedId !== id);
+      fetch(MypageToolsAjax.ajax_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'save_user_tool_ids',
+          ids: JSON.stringify(idsToSave),
+          _ajax_nonce: MypageToolsAjax.nonce
+        })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('サーバーエラー: ' + res.status);
+        return res.json();
+      })
+      .then(data => {
+        // 保存後に再取得
+        fetch(MypageToolsAjax.ajax_url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            action: 'get_user_tool_data',
+            _ajax_nonce: MypageToolsAjax.nonce
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          tabData = {
+            all: Array.isArray(data.data?.all) ? data.data.all : [],
+            tools: Array.isArray(data.data?.tools) ? data.data.tools : [],
+            materials: Array.isArray(data.data?.materials) ? data.data.materials : []
+          };
+          savedIds = tabData.all.map(i => i.id);
+          savedItems = tabData.all;
+          renderTabList();
+        });
+      })
+      .catch(err => {
+        alert('通信エラー: ' + err.message);
+        console.error('fetchエラー', err);
+      });
+    });
     wrapper.appendChild(div);
   }
 

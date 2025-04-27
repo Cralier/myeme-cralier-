@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="step-actions">
         <button type="button" class="step-menu-toggle">⋯</button>
         <div class="step-menu" style="display: none;">
-          <button type="button" class="remove-${type}">削除</button>
+      <button type="button" class="remove-${type}">削除</button>
         </div>
       </div>
     `;

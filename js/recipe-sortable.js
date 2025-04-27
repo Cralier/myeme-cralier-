@@ -18,25 +18,25 @@ document.addEventListener('DOMContentLoaded', () => {
             handle: '.handle',
             placeholder: 'sortable-placeholder',
             tolerance: 'pointer'
-        });
-
-        $('#steps-container').sortable({
+          });
+          
+          $('#steps-container').sortable({
             handle: '.handle',
             items: '> .step-item',
             placeholder: 'sortable-placeholder',
             cancel: 'input,textarea,button,label',
             tolerance: 'pointer',
             update: updateStepLabels
-        });
-    }
+          });
+        }
 
     // Create item (material or tool)
     function createItem(type) {
-        const item = document.createElement('div');
+  const item = document.createElement('div');
         const isToolItem = type === 'tool';
         
         item.className = `${type}-row recipe-sortable-item`;
-        
+
         const inputName = isToolItem ? 'tool_name[]' : 'material_name[]';
         const inputUrlName = isToolItem ? 'tool_url[]' : 'material_url[]';
         const placeholder = isToolItem ? '道具名を入力' : '材料名を入力';
@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        return item;
-    }
+  return item;
+}
 
     // Add item (material or tool)
     function addItem(type, name = '', url = '') {
@@ -66,60 +66,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hint) {
             hint.remove();
-        }
+    }
 
         const item = createItem(type);
         if (name) {
             item.querySelector(`.${type}-name-input`).value = name;
-        }
+}
         if (url) {
             item.querySelector(`.${type}-url-input`).value = url;
         }
 
         wrapper.appendChild(item);
         updateSortable(wrapper);
-    }
-
+}
+  
     // Add step
     function addStep() {
         const count = elements.stepContainer.querySelectorAll('.step-item').length + 1;
         const step = document.createElement('div');
         step.className = 'step-item';
         step.innerHTML = `
-            <div class="step-header">
-                <span class="handle">≡</span>
-                <span class="step-label">手順 ${count}</span>
-                <div class="step-actions">
-                    <button type="button" class="step-menu-toggle">⋯</button>
-                    <div class="step-menu" style="display: none;">
-                        <button type="button" class="remove-step">作り方を削除</button>
-                    </div>
-                </div>
+          <div class="step-header">
+            <span class="handle">≡</span>
+            <span class="step-label">手順 ${count}</span>
+            <div class="step-actions">
+              <button type="button" class="step-menu-toggle">⋯</button>
+              <div class="step-menu" style="display: none;">
+                <button type="button" class="remove-step">作り方を削除</button>
+              </div>
             </div>
-            <div class="step-content">
-                <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
-                <div class="image-drop-area">
-                    <label class="image-upload-label">
-                        <input type="file" name="steps_image[]" class="step-image-input" accept="image/*">
-                        <div class="image-preview">
-                            <img src="${window.uploadIconUrl || '/wp-content/themes/mytheme/images/upload-photo-icon.png'}" />
-                        </div>
-                    </label>
+          </div>
+          <div class="step-content">
+            <textarea name="steps_text[]" placeholder="作り方の説明を記入してください"></textarea>
+            <div class="image-drop-area">
+              <label class="image-upload-label">
+                <input type="file" name="steps_image[]" class="step-image-input" accept="image/*">
+                <div class="image-preview">
+                  <img src="${window.uploadIconUrl || '/wp-content/themes/mytheme/images/upload-photo-icon.png'}" />
                 </div>
+              </label>
             </div>
+          </div>
         `;
-
+      
         elements.stepContainer.appendChild(step);
         updateStepLabels();
     }
 
     // Update step labels
-    function updateStepLabels() {
+      function updateStepLabels() {
         elements.stepContainer.querySelectorAll('.step-item').forEach((step, index) => {
-            const label = step.querySelector('.step-label');
-            if (label) label.textContent = `手順 ${index + 1}`;
+          const label = step.querySelector('.step-label');
+          if (label) label.textContent = `手順 ${index + 1}`;
         });
-    }
+      }
 
     // Initialize sortable
     function updateSortable(wrapper) {
@@ -231,5 +231,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Start initialization
     init();
-});
+  });
   

@@ -284,8 +284,8 @@ function enqueue_autocomplete_scripts() {
         'nonce' => wp_create_nonce('mypage_tools_nonce')
       ]);
     }
-}
-add_action('wp_enqueue_scripts', 'enqueue_autocomplete_scripts');
+  }
+  add_action('wp_enqueue_scripts', 'enqueue_autocomplete_scripts');
 
 
   function enqueue_mypage_genre_assets() {
@@ -343,7 +343,7 @@ add_action('wp_ajax_nopriv_save_user_genres', 'save_user_genres');
 function save_handmade_genres_meta($post_id) {
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
     if (get_post_type($post_id) !== 'recipe') return;
-    
+
     if (isset($_POST['handmade_genres'])) {
         $genres = is_array($_POST['handmade_genres']) 
             ? array_map('sanitize_text_field', $_POST['handmade_genres'])

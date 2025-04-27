@@ -21,13 +21,12 @@ if (!is_user_logged_in()) {
 }
 
 // フォーム表示用の初期変数
+$draft_post_id = isset($_GET['draft_post_id']) ? intval($_GET['draft_post_id']) : 0;
 $form_title = '';
 $form_tools = json_decode(get_post_meta($draft_post_id, 'tools', true), true) ?: [];
 $form_materials = json_decode(get_post_meta($draft_post_id, 'materials', true), true) ?: [];
 $form_steps = [];
 $editing_post = null;
-
-$draft_post_id = isset($_GET['draft_post_id']) ? intval($_GET['draft_post_id']) : 0;
 
 if ($draft_post_id) {
     $post = get_post($draft_post_id);
