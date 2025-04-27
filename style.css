@@ -2758,4 +2758,27 @@ textarea[name="recipe_description"]:focus {
   border-radius: 5px;
 }
 
+/* tools_add_button custom styles */
+.tools-add-button-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+.tools_add_button {
+    display: inline-block;
+    padding: 8px 100px;
+    color: #BDA58B;
+    border: 2px solid #BDA58B;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    box-shadow: 0 2px 8px rgba(186, 165, 139, 0.08);
+}
+.tools_add_button:hover, .tools_add_button:focus {
+    background: #EADCC2;
+    color: #BDA58B;
+    border-color: #BDA58B;
+    text-decoration: none;
+}
+
 

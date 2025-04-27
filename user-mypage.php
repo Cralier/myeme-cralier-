@@ -191,41 +191,37 @@ if (get_current_user_id() !== $user->ID) {
         <section class="user-materials-section">
             <div class="section-header">
                 <h3>あなたの材料・道具</h3>
-                <a href="<?php echo home_url('/mypage/' . $user->user_login . '/tools'); ?>">すべて見る</a>
+                <a href="http://localhost:10003/mypage/cralier01/tools/">すべて見る</a>
             </div>
-            <?php
-            // デバッグ用: ユーザーメタ全体を出力
-            echo '<pre style="font-size:10px;overflow-x:auto;background:#fffbe6;border:1px solid #e0c97f;">';
-            print_r(get_user_meta($user->ID));
-            echo '</pre>';
-            ?>
             <div class="works-grid">
                 <?php
-                // ユーザーの保存済み材料を取得
-                $saved_materials = get_user_meta($user->ID, 'saved_materials', true);
-                $saved_tools = get_user_meta($user->ID, 'saved_tools', true);
-                
-                // 材料と道具を結合して最初の6個を表示
-                $all_items = array();
-                if (!empty($saved_materials) && is_array($saved_materials)) {
-                    $all_items = array_merge($all_items, $saved_materials);
-                }
-                if (!empty($saved_tools) && is_array($saved_tools)) {
-                    $all_items = array_merge($all_items, $saved_tools);
-                }
-                
-                if (!empty($all_items)) {
-                    // 最初の6個のみ表示
-                    $display_items = array_slice($all_items, 0, 6);
-                    foreach ($display_items as $item) {
+                // ユーザーの保存済みIDリストを取得
+                $mypage_tools_ids = get_user_meta($user->ID, 'mypage_tools_ids', true);
+                if (!empty($mypage_tools_ids) && is_array($mypage_tools_ids)) {
+                    // マスターデータを読み込み
+                    $materials = @json_decode(@file_get_contents(ABSPATH . 'wp-content/uploads/autocomplete/materials.json'), true) ?: [];
+                    $tools = @json_decode(@file_get_contents(ABSPATH . 'wp-content/uploads/autocomplete/tools.json'), true) ?: [];
+                    $all_items_by_id = [];
+                    foreach (array_merge($materials, $tools) as $item) {
+                        if (!empty($item['id'])) {
+                            $all_items_by_id[(string)$item['id']] = $item;
+                        }
+                    }
+                    $display_ids = array_slice($mypage_tools_ids, 0, 6);
+                    foreach ($display_ids as $id) {
+                        $item = isset($all_items_by_id[$id]) ? $all_items_by_id[$id] : null;
+                        $img = !empty($item['Image']) ? esc_url($item['Image']) : (!empty($item['image']) ? esc_url($item['image']) : get_template_directory_uri() . '/images/placeholder.jpg');
                         echo '<div class="work-item">';
-                        echo '<img src="' . esc_url($item) . '" alt="材料・道具">';
+                        echo '<img src="' . $img . '" alt="材料・道具" style="width:100%;height:auto;">';
                         echo '</div>';
                     }
                 } else {
                     echo '<p>保存した材料・道具はありません。</p>';
                 }
                 ?>
+            </div>
+            <div class="tools-add-button-wrapper">
+                <a href="http://localhost:10003/mypage/cralier01/tools/" class="tools_add_button">＋追加する</a>
             </div>
         </section>
     </div>
