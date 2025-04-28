@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let materials = [];
   let tools = [];
+  let userSavedIds = [];
 
   // ▼ JSONデータを事前ロード
   async function loadData() {
@@ -20,6 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadData();
 
+  // ユーザーの保存済みIDを取得
+  async function fetchUserSavedIds() {
+    try {
+      const res = await fetch('/wp-admin/admin-ajax.php?action=get_user_tool_data');
+      const data = await res.json();
+      if (data.success && data.data && Array.isArray(data.data.all)) {
+        userSavedIds = data.data.all.map(i => i.id?.toString());
+      }
+    } catch (e) {
+      userSavedIds = [];
+    }
+  }
+  fetchUserSavedIds();
+
   // ▼ 入力監視
   searchInput?.addEventListener('input', () => {
     const query = searchInput.value.trim();
@@ -33,9 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
       ...tools.map(t => ({ ...t, type: 'tool' }))
     ];
 
-    const matched = combined.filter(item =>
-      item.name.includes(query)
-    ).slice(0, 4);
+    // 検索結果を分けて、保存済みIDを上位に
+    let matched = combined.filter(item => item.name.includes(query));
+    let saved = matched.filter(item => userSavedIds.includes(item.id?.toString()));
+    let unsaved = matched.filter(item => !userSavedIds.includes(item.id?.toString()));
+    matched = [...saved, ...unsaved].slice(0, 8);
 
     renderDropdown(matched);
   });
@@ -56,6 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const div = document.createElement('div');
       div.className = 'autocomplete-option';
       div.textContent = item.name;
+      if (userSavedIds.includes(item.id?.toString())) {
+        div.style.background = '#F5EBE1';
+        div.style.position = 'relative';
+        const star = document.createElement('span');
+        star.textContent = '★';
+        star.style.color = '#BDA58B';
+        star.style.fontSize = '18px';
+        star.style.position = 'absolute';
+        star.style.left = '10px';
+        star.style.top = '50%';
+        star.style.transform = 'translateY(-50%)';
+        div.style.paddingLeft = '32px';
+        div.prepend(star);
+      }
       div.addEventListener('click', () => {
         addItemToArea(item, item.type);
         saveItemToUser(item.id, item.type);
