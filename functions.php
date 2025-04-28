@@ -962,3 +962,22 @@ add_action('wp_ajax_get_user_tool_data', function() {
         'all' => $all_items
     ]);
 });
+
+// --- ユーザー編集ページ用のリライトルールとテンプレート読み込み ---
+add_action('init', function() {
+    add_rewrite_rule('^mypage/([^/]+)/edit_profile/?$', 'index.php?user_edit_profile=$matches[1]', 'top');
+});
+
+add_filter('query_vars', function($vars) {
+    $vars[] = 'user_edit_profile';
+    return $vars;
+});
+
+add_action('template_redirect', function() {
+    $user_login = get_query_var('user_edit_profile');
+    if ($user_login) {
+        include get_template_directory() . '/user-edit-profile.php';
+        exit;
+    }
+});
+// --- ここまで ---

@@ -48,8 +48,13 @@ if (get_current_user_id() !== $user->ID) {
     <section class="profile-section">
         <div class="profile-image">
             <?php
-            $avatar = get_avatar($user->ID, 120);
-            echo $avatar ? $avatar : '<img src="' . get_template_directory_uri() . '/images/default-avatar.png" alt="プロフィール画像">';
+            $profile_avatar_url = get_user_meta($user->ID, 'profile_avatar', true);
+            if ($profile_avatar_url) {
+                echo '<img src="' . esc_url($profile_avatar_url) . '" alt="プロフィール画像" style="width:120px;height:120px;border-radius:50%;object-fit:cover;">';
+            } else {
+                $avatar = get_avatar($user->ID, 120);
+                echo $avatar ? $avatar : '<img src="' . get_template_directory_uri() . '/images/default-avatar.png" alt="プロフィール画像">';
+            }
             ?>
         </div>
         <h2><?php echo esc_html($user->display_name); ?></h2>
@@ -59,7 +64,7 @@ if (get_current_user_id() !== $user->ID) {
             echo $description ? esc_html($description) : '紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。紹介文が入ります。';
             ?>
         </p>
-        <a href="#" class="edit-profile-button">登録情報を編集</a>
+        <a href="<?php echo home_url('/mypage/' . $user->user_login . '/edit_profile'); ?>" class="edit-profile-button">登録情報を編集</a>
     </section>
 
     <!-- タブナビゲーション -->
